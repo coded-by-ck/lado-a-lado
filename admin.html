@@ -184,18 +184,8 @@
                 });
 
                 agendamentosGlobal.sort((a, b) => {
-                    const agora = new Date();
-
                     const dataHoraA = new Date(`${a.data}T${a.hora || "00:00"}`);
                     const dataHoraB = new Date(`${b.data}T${b.hora || "00:00"}`);
-
-                    const aEhPassado = dataHoraA < agora;
-                    const bEhPassado = dataHoraB < agora;
-
-                    if (aEhPassado !== bEhPassado) {
-                        return aEhPassado - bEhPassado;
-                    }
-
                     return dataHoraA - dataHoraB;
                 });
 
@@ -269,9 +259,7 @@
                 lista.appendChild(card);
             });
 
-            const botoesStatus = document.querySelectorAll(".btn-acao");
-
-            botoesStatus.forEach((botao) => {
+            document.querySelectorAll(".btn-acao").forEach((botao) => {
                 botao.addEventListener("click", async () => {
                     const id = botao.getAttribute("data-id");
                     const novoStatus = botao.getAttribute("data-status");

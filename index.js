@@ -168,6 +168,7 @@ async function carregarHorarios(barbeiro, data) {
 
     horariosDiv.innerHTML = "";
 
+    const agora = new Date();
     const snapshot = await window.getDocs(
         window.collection(window.db, "horarios_ocupados")
     );
@@ -186,7 +187,10 @@ async function carregarHorarios(barbeiro, data) {
         btn.innerText = hora;
         btn.classList.add("horario-btn");
 
-        if (ocupados.includes(hora)) {
+        const dataHora = new Date(`${data}T${hora}:00`);
+        const horarioPassado = dataHora <= agora;
+
+        if (ocupados.includes(hora) || horarioPassado) {
             btn.disabled = true;
             btn.classList.add("horario-ocupado");
         } else {
@@ -241,7 +245,6 @@ btnConfirmar?.addEventListener('click', async () => {
             ...agendamento
         });
 
-        // vibração no celular
         if ("vibrate" in navigator) {
             navigator.vibrate([120, 50, 120]);
         }
@@ -261,7 +264,6 @@ Hora: ${agendamento.hora}`;
             hora: agendamento.hora
         });
 
-        // limpa formulário
         document.getElementById('nomeCliente').value = "";
         document.getElementById('telefoneCliente').value = "";
         document.getElementById('emailCliente').value = "";

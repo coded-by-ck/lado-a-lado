@@ -45,6 +45,10 @@ function validarServicoPreco(servico, preco) {
   );
 }
 
+function gerarHorarioId(barbeiro, data, hora) {
+  return `${barbeiro}_${data}_${hora}`.replace(/[^\w-]/g, "_");
+}
+
 // 🔒 CRIAR AGENDAMENTO COM TRAVA REAL
 exports.criarAgendamento = onCall(async (request) => {
   const dados = request.data || {};
@@ -87,7 +91,14 @@ exports.criarAgendamento = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Horário inválido.");
   }
 
-  const horarioId = `${barbeiro}_${data}_${hora}`.replace(/[^\w-]/g, "_");
+  // bloqueia horário passado no backend também
+  const agora = new Date();
+  const dataHoraAgendamento = new Date(`${data}T${hora}:00`);
+  if (dataHoraAgendamento <= agora) {
+    throw new HttpsError("failed-precondition", "Não é possível agendar um horário que já passou.");
+  }
+
+  const horarioId = gerarHorarioId(barbeiro, data, hora);
   const horarioRef = db.collection("horarios_ocupados").doc(horarioId);
   const agendamentoRef = db.collection("agendamentos").doc();
 
