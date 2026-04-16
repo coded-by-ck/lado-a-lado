@@ -1,0 +1,50 @@
+RESET PADRÃO PREMIUM
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Garante que padding não aumente o tamanho dos elementos */
+    font-family: 'Electrolize', sans-serif; /* Ou a fonte que você escolheu */
+}
+
+html {
+    scroll-behavior: smooth; /* Deixa o deslize do menu suave */
+}
+
+body {
+    background-color: #050505;
+    color: #ffffff;
+    line-height: 1.5;
+    overflow-x: hidden; /* Evita que o site "dance" para os lados no celular */
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: 0.3s;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+/* Remove aquele contorno azul chato ao clicar em links/botões */
+*:focus {
+    outline: none;
+}
+
+/* Ajuste para aquele "pontinho" ou espaço fantasma nos links */
+a img {
+    vertical-align: middle;
+}

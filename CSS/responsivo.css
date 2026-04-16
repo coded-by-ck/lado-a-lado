@@ -1,0 +1,162 @@
+/* DESIGN PARA CELULAR E TABLET (Até 1024px) */
+@media (max-width: 1024px) {
+    
+    /* 1. Resetar o Header: Tirar o gap gigante e centralizar a logo */
+    header {
+        justify-content: space-between !important;
+        gap: 0 !important;
+        padding: 0 20px !important;
+        height: 70px !important;
+    }
+
+    /* 2. Esconder o menu de texto padrão e as redes sociais do topo */
+    .menu, .social {
+        display: none; 
+    }
+
+    /* 3. Ativar o Botão de Barrinhas (Menu Hamburguer) */
+    .menu-mobile {
+        display: block !important;
+        color: #d4af37;
+        font-size: 2rem;
+        cursor: pointer;
+    }
+
+    /* 4. Criar o Menu Lateral (que aparece ao clicar) */
+    .menu-lateral {
+        position: fixed;
+        top: 0;
+        right: -100%; /* Começa escondido na direita */
+        width: 100%;  /* Ocupa a tela toda no celular */
+        height: 100vh;
+        background: #0d0d0d;
+        z-index: 2000;
+        transition: 0.5s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Quando o JS colocar a classe 'aberto' */
+    .menu-lateral.aberto {
+        right: 0;
+    }
+
+    .menu-lateral ul {
+        list-style: none;
+        text-align: center;
+    }
+
+    .menu-lateral ul li {
+        margin: 25px 0;
+    }
+
+    .menu-lateral ul li a {
+        font-size: 1.8rem;
+        color: white;
+        text-transform: uppercase;
+        font-family: "Fjalla One", sans-serif;
+    }
+
+    .btn-fechar {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 2.5rem;
+        color: #d4af37;
+        cursor: pointer;
+    }
+
+    /* 5. Corrigir o que "estourou" no corpo do site */
+    .conteudo-hero h1 {
+        font-size: 1.8rem !important;
+    }
+    
+    .logo-centro {
+        width: 180px !important;
+    }
+
+    .container-sobre, .container-origem, .local-grid {
+        flex-direction: column !important;
+        padding: 20px !important;
+        text-align: center;
+    }
+}
+
+/* GARANTIR QUE O BOTÃO SUMA NO NOTEBOOK */
+@media (min-width: 1025px) {
+    .menu-mobile, .menu-lateral, .btn-fechar {
+        display: none !important;
+    }
+}
+
+/* HERO RESPONSIVO MELHORADO */
+@media (max-width: 768px) {
+    .carrossel {
+        height: 85vh;
+        min-height: 650px;
+    }
+
+    .imagem {
+        height: 85vh;
+        min-height: 650px;
+        object-fit: cover;
+    }
+
+    /* Ajuste fino por imagem */
+    .img1 {
+        object-position: center center;
+    }
+
+    .img2 {
+        object-position: center 35%;
+    }
+
+    .img3 {
+        object-position: center 25%;
+    }
+
+    .img4 {
+        object-position: center 20%;
+    }
+
+    .conteudo-hero {
+        top: 52%;
+        width: 100%;
+        max-width: 100%;
+        padding: 0 18px;
+    }
+
+    .logo-centro {
+        width: 170px !important;
+        margin-bottom: 14px;
+    }
+
+    .conteudo-hero h1 {
+        font-size: 1.45rem !important;
+        line-height: 1.2;
+        margin-bottom: 12px;
+    }
+
+    .conteudo-hero p {
+        font-size: 0.95rem;
+        margin-bottom: 22px;
+        line-height: 1.4;
+    }
+
+    .btn-agendar {
+        display: inline-block;
+        padding: 12px 24px;
+        font-size: 0.95rem;
+    }
+
+    .botoes-carrossel {
+        bottom: 14px;
+    }
+
+    .botao {
+        width: 12px;
+        height: 12px;
+    }
+}

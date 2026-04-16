@@ -1,0 +1,323 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0d0d0d;
+    color: white;
+    font-family: "Fjalla One", sans-serif;
+    min-height: 100vh;
+}
+
+.admin-page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.admin-box {
+    width: 100%;
+    max-width: 1200px;
+    background: #141414;
+    border: 1px solid #222;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.25);
+}
+
+.admin-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.admin-header h1 {
+    font-size: 2.5rem;
+    color: #d4af37;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.admin-header p {
+    color: #999;
+    font-size: 1rem;
+    letter-spacing: 1px;
+}
+
+.login-area {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-principal {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-principal:hover {
+    transform: translateY(-2px);
+    opacity: 0.95;
+}
+
+.painel-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.painel-topo h2 {
+    font-size: 1.8rem;
+    color: #fff;
+}
+
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.btn-filtro {
+    background: #1f1f1f;
+    color: #d4af37;
+    border: 1px solid #333;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+.btn-filtro:hover {
+    background: #2a2a2a;
+}
+
+.btn-filtro.ativo {
+    background: #d4af37;
+    color: #000;
+    border-color: #d4af37;
+}
+
+.lista-agendamentos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.card-agendamento {
+    background: linear-gradient(180deg, #1a1a1a, #151515);
+    border: 1px solid #272727;
+    border-radius: 14px;
+    padding: 20px;
+    transition: 0.3s ease-in-out;
+}
+
+.card-agendamento:hover {
+    border-color: #d4af37;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(212, 175, 55, 0.08);
+}
+
+.card-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.card-topo h3 {
+    font-size: 1.3rem;
+    color: #fff;
+}
+
+.status {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.status-pendente {
+    background: rgba(212, 175, 55, 0.15);
+    color: #d4af37;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.status-concluido {
+    background: rgba(29, 131, 70, 0.15);
+    color: #39d67d;
+    border: 1px solid rgba(57, 214, 125, 0.35);
+}
+
+.status-cancelado {
+    background: rgba(179, 27, 27, 0.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.35);
+}
+
+.card-info p {
+    color: #ccc;
+    margin-bottom: 8px;
+    line-height: 1.5;
+    font-family: 'Arial', sans-serif;
+}
+
+.card-info strong {
+    color: #fff;
+}
+
+.card-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.btn-acao {
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 0.9rem;
+}
+
+.btn-acao:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+.btn-confirmar {
+    background: #d4af37;
+    color: #000;
+}
+
+.btn-concluir {
+    background: #1d8346;
+    color: #fff;
+}
+
+.btn-cancelar {
+    background: #b31b1b;
+    color: #fff;
+}
+
+.mensagem {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #aaa;
+    padding: 30px 10px;
+    font-size: 1rem;
+}
+
+.mensagem.erro {
+    color: #ff6b6b;
+}
+
+@media (max-width: 768px) {
+    .admin-box {
+        padding: 20px;
+    }
+
+    .admin-header h1 {
+        font-size: 2rem;
+    }
+
+    .painel-topo {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filtros {
+        width: 100%;
+    }
+
+    .btn-filtro {
+        flex: 1;
+        text-align: center;
+    }
+
+    .lista-agendamentos {
+        grid-template-columns: 1fr;
+    }
+
+    .card-topo {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .card-acoes {
+        flex-direction: column;
+    }
+
+    .btn-acao {
+        width: 100%;
+    }
+}
+
+.topo-acoes {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btn-logout {
+    background: #b31b1b;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-logout:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+.btn-excluir {
+    background: transparent;
+    border: 1px solid #555;
+    color: #bbb;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+.btn-excluir:hover {
+    border-color: #d4af37;
+    color: #d4af37;
+}
+
+.telefone-link {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.telefone-link:hover {
+    text-decoration: underline;
+}

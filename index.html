@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+
+    <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="./CSS/responsivo.css">
+    <link rel="shortcut icon" href="./img/abelhinha.png" type="image/x-icon">
+
+
+
+    <title>Lado a Lado</title>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="#home"><img src="./img/abelhinha.png" class="logo" alt="Logo"></a>
+
+        <div class="menu-mobile" onclick="abrirMenu()">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav class="menu">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#sobre">Sobre</a></li>
+                <li><a href="#servicos">Serviços</a></li>
+                <li><a href="#feedbacks">Feedbacks</a></li>
+                <li><a href="#localizacao">Localização</a></li>
+            </ul>
+        </nav>
+
+        <div class="social">
+            <a href="https://contate.me/556799995999" target="_blank" class="icon-link">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+            <a href="https://www.instagram.com/ladoalado_barbearia/" target="_blank" class="icon-link">
+                <i class="fab fa-instagram"></i>
+            </a>
+        </div>
+
+        <div class="menu-lateral" id="menuLateral">
+            <div class="btn-fechar" onclick="fecharMenu()">&times;</div>
+            <ul>
+                <li><a href="#home" onclick="fecharMenu()">Home</a></li>
+                <li><a href="#sobre" onclick="fecharMenu()">Sobre</a></li>
+                <li><a href="#servicos" onclick="fecharMenu()">Serviços</a></li>
+                <li><a href="#feedbacks" onclick="fecharMenu()">Feedbacks</a></li>
+                <li><a href="#localizacao" onclick="fecharMenu()">Localização</a></li>
+            </ul>
+            <div class="social-mobile">
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </header>
+    <!-- CARROSSEL -->
+    <main>
+        <div class="carrossel" id="home">
+            <img class="imagem ativa img1" src="./img/background-div.jpg">
+            <img class="imagem img2" src="./img/tenis.jpg">
+            <img class="imagem img3" src="./img/barber-3.jpg">
+            <img class="imagem img4" src="./img/barber-4.jpg">
+
+            <div class="conteudo-hero">
+                <img src="./img/lado-a-deus.png" class="logo-centro">
+                <h1>CUIDAMOS DA SUA <strong>AUTOESTIMA</strong></h1>
+                <p>CORTE NO TEMPO ESTILO ATEMPORAL</p>
+                <a href="#servicos" class="btn-agendar">AGENDE SEU HORARIO</a>
+            </div>
+
+        </div>
+
+        <!-- BOTÕES -->
+        <div class="botoes-carrossel">
+            <button class="botao selecionado"></button>
+            <button class="botao"></button>
+            <button class="botao"></button>
+            <button class="botao"></button>
+        </div>
+    </main>
+
+    <section class="sobre" id="sobre">
+        <div class="container-sobre">
+            <div class="sobre-imagem">
+                <div class="moldura-dourada">
+                    <img src="./img/dragon.jpg" alt="Nossa Barbearia" class="foto-perfil">
+                </div>
+            </div>
+
+            <div class="sobre-conteudo">
+                <h2 class="titulo-sessao">Nossa <span>História</span></h2>
+                <p class="texto-destaque">Tradição, Estilo e Atitude lado a lado com você.</p>
+                <p class="descricao">
+                    A Barbearia Lado a Lado é um espaço dedicado a oferecer serviços de barbearia de alta qualidade,
+                    onde a tradição e a modernidade se encontram para criar uma experiência única.
+                    Fundada com o objetivo de proporcionar cortes de cabelo e cuidados excepcionais,
+                    nos destacamos pela nossa equipe apaixonada e um ambiente onde você pode relaxar e se sentir
+                    valorizado.
+                </p>
+                <div class="detalhe-barber">✂</div>
+            </div>
+        </div>
+    </section>
+    <section class="origem" id="origem">
+        <div class="container-origem">
+            <div class="origem-conteudo">
+                <h2 class="titulo-sessao">Como tudo <span>Começou</span></h2>
+                <p class="texto-destaque">De um sonho de bancada à referência na região.</p>
+                <p class="descricao">
+                    Tudo começou quando eu varria o chão de uma barbearia e colocava as toalhas para esquentar. Eu não
+                    ganhava nada para fazer isso… Na real, ganhava muito: ganhava conhecimento, aprendia técnicas de
+                    corte — mas ainda não cortava.
+                    Hoje, sendo proprietário da @ladoalado_barbearia , varrer o chão é uma das partes mais gostosas!
+                    Hahahah.
+                    Muito obrigado por tudo, @ladoalado_barbearia, e aos meus parceiros que trabalham comigo!
+                    @mr.cortexx e @pablosilva_barberr
+                </p>
+                <div class="detalhe-barber">💈</div>
+            </div>
+
+            <div class="origem-imagem">
+                <div class="moldura-dourada-direita">
+                    <img src="./img/barber-1.jpg" alt="Origem da Barbearia" class="foto-origem">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- <section class="equipe-secao" id="equipe">
+        <div class="container-equipe-v2">
+            <div class="equipe-info">
+                <h2 class="titulo-sessao">Nossa <span>Equipe</span></h2>
+                <p class="texto-destaque">Excelência em cada detalhe, de geração em geração.</p>
+                <p class="descricao">
+                    Nossos profissionais são treinados para entregar mais do que um corte: entregamos confiança.
+                    Com especialistas em barbas clássicas e cortes modernos, a equipe Lado a Lado está pronta
+                    para transformar o seu visual com a precisão que você merece.
+                </p>
+            </div>
+
+            <div class="equipe-banner-retangulo">
+                <div class="moldura-dourada-equipe">
+                    <img src="./img/barber-4.jpg" alt="Equipe Lado a Lado" class="foto-wide">
+                </div>
+            </div>
+        </div>
+    </section> -->
+    <section class="agendamento-premium" id="servicos">
+        <div class="fluxo-agendamento">
+            <h2 class="titulo-sessao">Agende seu <span>Estilo</span></h2>
+
+            <div class="passo ativo" id="passo-servicos">
+                <div class="header-passo">
+                    <span class="numero">01</span>
+                    <h3>Selecione o Serviço</h3>
+                </div>
+
+                <div class="lista-categorias">
+                    <div class="categoria-item">
+                        <button class="btn-categoria">Cabelo <span class="seta">+</span></button>
+                        <div class="servicos-lista">
+                            <div class="item-servico" data-nome="Corte" data-preco="45,00">
+                                <div class="info">
+                                    <strong>Corte</strong>
+                                    <span>30 min • R$ 45,00</span>
+                                </div>
+                                <button class="btn-selecionar">Selecionar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="categoria-item">
+                        <button class="btn-categoria">Barba & Combos <span class="seta">+</span></button>
+                        <div class="servicos-lista">
+                            <div class="item-servico" data-nome="Barba" data-preco="40,00">
+                                <div class="info">
+                                    <strong>Barba</strong>
+                                    <span>30 min • R$ 40,00</span>
+                                </div>
+                                <button class="btn-selecionar">Selecionar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="passo" id="passo-profissionais">
+                <div class="header-passo">
+                    <span class="numero">02</span>
+                    <h3>Escolha o Profissional</h3>
+                    <button class="btn-voltar">← Voltar</button>
+                </div>
+
+                <div class="grade-profissionais">
+                    <div class="card-profissional" data-barbeiro="Matheus">
+                        <img src="./img/mat.jpg" alt="Matheus">
+                        <h4>Matheus</h4>
+                        <span>Especialista em Degradê</span>
+                        <button class="btn-escolher-barbeiro">Escolher Matheus</button>
+                    </div>
+
+                    <div class="card-profissional" data-barbeiro="Diogo">
+                        <img src="./img/dg.jpg" alt="Diogo">
+                        <h4>Diogo</h4>
+                        <span>Mestre Barbeiro</span>
+                        <button class="btn-escolher-barbeiro">Escolher Diogo</button>
+                    </div>
+                </div>
+
+                <div class="form-agendamento" id="formAgendamento" style="display: none;">
+                    <h4>Finalize seu agendamento</h4>
+
+                    <input type="text" id="nomeCliente" placeholder="Seu nome">
+                    <input type="tel" id="telefoneCliente" placeholder="Seu WhatsApp">
+                    <input type="email" id="emailCliente" placeholder="Seu e-mail (opcional)">
+                    <div class="lembrar-email-box">
+                        <input type="checkbox" id="lembrarEmail" checked>
+                        <label for="lembrarEmail">Quero receber lembrete por e-mail</label>
+                    </div>
+                    <input type="text" id="data" placeholder="Selecione a data">
+
+                    <div class="horarios-container">
+                        <h4>Escolha o horário</h4>
+                        <div id="horarios"></div>
+                    </div>
+
+                    <button id="btnConfirmarAgendamento" class="btn-finalizar-agendamento">
+                        Confirmar Agendamento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="feedbacks" id="feedbacks">
+        <div class="container-feedbacks">
+            <div class="sessao-header">
+                <h2 class="titulo-sessao">O que dizem os <span>Clientes</span></h2>
+                <div class="google-rating">
+
+                    <span>Avaliação 5.0 no Google Maps</span>
+                </div>
+            </div>
+
+            <div class="grade-feedbacks">
+                <div class="card-feedback">
+                    <div class="estrelas">★★★★★</div>
+                    <p class="depoimento">"Melhor barbearia da região! O atendimento do Matheus é diferenciado e o
+                        ambiente é muito top. Recomendo de olhos fechados."</p>
+                    <div class="cliente-info">
+                        <strong>Ricardo Silva</strong>
+                        <span>Cliente há 2 anos</span>
+                    </div>
+                </div>
+
+                <div class="card-feedback">
+                    <div class="estrelas">★★★★★</div>
+                    <p class="depoimento">"Lugar de extremo bom gosto. O Pablo é um mestre na tesoura, o corte ficou
+                        exatamente como eu queria. Cerveja gelada e resenha boa."</p>
+                    <div class="cliente-info">
+                        <strong>André Oliveira</strong>
+                        <span>Local Guide</span>
+                    </div>
+                </div>
+
+                <div class="card-feedback">
+                    <div class="estrelas">★★★★★</div>
+                    <p class="depoimento">"Fiz a barba com o Marcos e foi uma experiência relaxante. Toalha quente e
+                        produtos de primeira. Nota 10!"</p>
+                    <div class="cliente-info">
+                        <strong>Bruno Souza</strong>
+                        <span>Cliente VIP</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback-footer">
+                <a href="LINK_DO_SEU_GOOGLE_MAPS_AQUI" target="_blank" class="btn-google">
+                    Ver todas no Google
+                </a>
+            </div>
+        </div>
+    </section>
+    <section class="localizacao" id="localizacao">
+        <div class="container-local">
+            <div class="local-grid">
+                <div class="local-info">
+                    <h2 class="titulo-sessao">Onde <span>Estamos</span></h2>
+                    <p class="endereco">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Av. Brasil, 324 - Centro<br>
+                        Ivinhema - MS, 79740-000
+                    </p>
+
+                    <div class="horarios">
+                        <h3><i class="fas fa-clock"></i> Horário de Funcionamento</h3>
+                        <ul>
+                            <li><span>Segunda - Sexta:</span> 08:00 – 19:00</li>
+                            <li><span>Sábado:</span> 08:00 – 17:00</li>
+                            <li><span>Domingo:</span> Fechado</li>
+                        </ul>
+                    </div>
+
+                    <a href="https://maps.app.goo.gl/FWSjstqdHbVovicq8" target="_blank" class="btn-rota">
+                        Como Chegar (Google Maps)
+                    </a>
+                </div>
+
+                <div class="local-mapa">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3691.2667328915936!2d-53.824322699999996!3d-22.305749899999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x948ebba0b6d17a9f%3A0xc3292510ad2968dd!2sLado%20a%20Lado!5e0!3m2!1spt-BR!2sbr!4v1775319709361!5m2!1spt-BR!2sbr"
+                        width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="rodape">
+        <div class="container-rodape">
+            <div class="rodape-content">
+                <div class="rodape-logo">
+                    <h2>Barbearia <span>Lado a Lado</span></h2>
+                    <p>Onde a tradição encontra o estilo.</p>
+                </div>
+
+                <div class="rodape-links">
+                    <h4>Navegação</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#sobre">Sobre</a></li>
+                        <li><a href="#servicos">Serviços</a></li>
+                        <li><a href="#feedbacks">Avaliações</a></li>
+                    </ul>
+                </div>
+
+                <div class="rodape-social">
+                    <h4>Siga-nos</h4>
+                    <div class="social-icons">
+                        <a href="https://www.instagram.com/ladoalado_barbearia/" aria-label="Instagram"
+                            target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://contate.me/556799995999" aria-label="WhatsApp" target="_blank"><i
+                                class="fab fa-whatsapp"></i></a>
+                        <a href="https://web.facebook.com/matheus.hermenegildo.1" aria-label="Facebook"
+                            target="_blank"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="divisor-rodape">
+
+            <div>
+                <a href="https://www.instagram.com/codedby.ck/" target="_blank" rel="noopener noreferrer">
+                    <p class="assinatura">© 2026 Coded by <strong>CK</strong></p>
+                </a>
+            </div>
+        </div>
+    </footer>
+    <div id="modalSucesso" class="modal-sucesso">
+    <div class="modal-sucesso-box">
+        <div class="modal-icone">💈</div>
+        <h3>Agendamento confirmado</h3>
+        <p>Seu horário foi reservado com sucesso.</p>
+
+        <div class="modal-info" id="modalInfoAgendamento"></div>
+
+        <div class="modal-sucesso-botoes">
+            <button id="fecharModalSucesso" class="btn-modal-fechar">Fechar</button>
+            <button id="abrirWhatsModal" class="btn-modal-whats">WhatsApp</button>
+        </div>
+    </div>
+</div>
+    <!-- JS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+
+    <script src="./index.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyDNWWG7nPI7EXyuMlJmiHbeHAX6EXABWqQ",
+            authDomain: "barbearia-lado-a-lado.firebaseapp.com",
+            projectId: "barbearia-lado-a-lado",
+            storageBucket: "barbearia-lado-a-lado.firebasestorage.app",
+            messagingSenderId: "477542764196",
+            appId: "1:477542764196:web:691facb65d22e2f214a031"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const functions = getFunctions(app);
+
+        console.log("Firebase conectado 🔥");
+
+        window.db = db;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.functions = functions;
+        window.httpsCallable = httpsCallable;
+    </script>
+</body>
+
+</html>
