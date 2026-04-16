@@ -54,6 +54,9 @@
             deleteDoc,
             getDoc,
             setDoc,
+            getDocs,
+            query,
+            where,
             onSnapshot
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import {
@@ -92,18 +95,54 @@
         let unsubscribeAgendamentos = null;
 
         function gerarHorarioId(barbeiro, data, hora) {
-            const horaFormatada = hora.replace(":", "_");
+            const horaFormatada = String(hora).replace(":", "_");
             return `${barbeiro}_${data}_${horaFormatada}`;
         }
 
-        async function removerHorarioOcupado(dados) {
+        async function removerHorarioOcupado(dados, agendamentoId) {
+            const horariosRef = collection(db, "horarios_ocupados");
+
+            // 1) tenta apagar pelo ID novo
             const horarioId = gerarHorarioId(dados.barbeiro, dados.data, dados.hora);
             const horarioRef = doc(db, "horarios_ocupados", horarioId);
 
             try {
-                await deleteDoc(horarioRef);
+                const snap = await getDoc(horarioRef);
+                if (snap.exists()) {
+                    await deleteDoc(horarioRef);
+                }
             } catch (erro) {
-                console.warn("Não foi possível remover horario_ocupado:", erro);
+                console.warn("Falha ao remover por ID direto:", erro);
+            }
+
+            // 2) tenta apagar docs pelo agendamentoId
+            try {
+                const qAgendamentoId = query(horariosRef, where("agendamentoId", "==", agendamentoId));
+                const snapAgendamentoId = await getDocs(qAgendamentoId);
+
+                for (const item of snapAgendamentoId.docs) {
+                    await deleteDoc(doc(db, "horarios_ocupados", item.id));
+                }
+            } catch (erro) {
+                console.warn("Falha ao remover por agendamentoId:", erro);
+            }
+
+            // 3) fallback por barbeiro + data + hora
+            try {
+                const qCampos = query(
+                    horariosRef,
+                    where("barbeiro", "==", dados.barbeiro),
+                    where("data", "==", dados.data),
+                    where("hora", "==", dados.hora)
+                );
+
+                const snapCampos = await getDocs(qCampos);
+
+                for (const item of snapCampos.docs) {
+                    await deleteDoc(doc(db, "horarios_ocupados", item.id));
+                }
+            } catch (erro) {
+                console.warn("Falha ao remover por campos:", erro);
             }
         }
 
@@ -202,7 +241,7 @@
                     try {
                         const dados = agendamentosGlobal.find(item => item.id === id);
                         if (dados) {
-                            await removerHorarioOcupado(dados);
+                            await removerHorarioOcupado(dados, id);
                         }
 
                         await deleteDoc(doc(db, "agendamentos", id));
@@ -231,7 +270,7 @@
                 });
 
                 if (novoStatus === "cancelado") {
-                    await removerHorarioOcupado(dados);
+                    await removerHorarioOcupado(dados, id);
                 }
 
                 if (novoStatus === "pendente" || novoStatus === "concluido") {
