@@ -3,6 +3,7 @@ const botoes = document.querySelectorAll('.botao');
 
 let indexAtual = 0;
 let intervalo;
+let unsubscribeHorarios = null;
 
 function mudarSlide(index) {
     botoes.forEach((btn) => btn.classList.remove('selecionado'));
@@ -98,6 +99,11 @@ document.querySelectorAll('.item-servico').forEach((item) => {
         document.querySelectorAll('.card-profissional').forEach((card) => {
             card.classList.remove('selecionado');
         });
+
+        if (unsubscribeHorarios) {
+            unsubscribeHorarios();
+            unsubscribeHorarios = null;
+        }
     });
 });
 
@@ -117,6 +123,11 @@ btnVoltar?.addEventListener('click', () => {
     }
 
     if (formAgendamento) formAgendamento.style.display = 'none';
+
+    if (unsubscribeHorarios) {
+        unsubscribeHorarios();
+        unsubscribeHorarios = null;
+    }
 });
 
 // escolher barbeiro
@@ -149,48 +160,55 @@ document.querySelectorAll('.btn-escolher-barbeiro').forEach((btn) => {
 
         if (horariosDiv) horariosDiv.innerHTML = "";
         if (inputData) inputData.value = "";
+
+        if (unsubscribeHorarios) {
+            unsubscribeHorarios();
+            unsubscribeHorarios = null;
+        }
     });
 });
 
 // data
-document.getElementById("data")?.addEventListener("change", async (e) => {
+document.getElementById("data")?.addEventListener("change", (e) => {
     agendamento.data = e.target.value;
     agendamento.hora = "";
 
     if (!agendamento.barbeiro || !agendamento.data) return;
-    await carregarHorarios(agendamento.barbeiro, agendamento.data);
+    escutarHorarios(agendamento.barbeiro, agendamento.data);
 });
 
-// horários
-async function carregarHorarios(barbeiro, data) {
+// tempo passado
+function horarioJaPassou(data, hora) {
+    const agora = new Date();
+    const dataHora = new Date(`${data}T${hora}:00`);
+    return dataHora <= agora;
+}
+
+// renderizar horários
+function renderizarHorarios(barbeiro, data, ocupados) {
     const horariosDiv = document.getElementById("horarios");
     if (!horariosDiv) return;
 
     horariosDiv.innerHTML = "";
 
-    const agora = new Date();
-    const snapshot = await window.getDocs(
-        window.collection(window.db, "horarios_ocupados")
-    );
+    const dataObj = new Date(`${data}T00:00:00`);
+    const diaSemana = dataObj.getDay();
 
-    const ocupados = [];
-
-    snapshot.forEach(doc => {
-        const d = doc.data();
-        if (d.barbeiro === barbeiro && d.data === data) {
-            ocupados.push(d.hora);
-        }
-    });
+    if (diaSemana === 0) {
+        horariosDiv.innerHTML = `<p class="horarios-vazio">Fechado neste dia.</p>`;
+        return;
+    }
 
     horariosBase.forEach(hora => {
         const btn = document.createElement("button");
+        btn.type = "button";
         btn.innerText = hora;
         btn.classList.add("horario-btn");
 
-        const dataHora = new Date(`${data}T${hora}:00`);
-        const horarioPassado = dataHora <= agora;
+        const ocupado = ocupados.includes(hora);
+        const passado = horarioJaPassou(data, hora);
 
-        if (ocupados.includes(hora) || horarioPassado) {
+        if (ocupado || passado) {
             btn.disabled = true;
             btn.classList.add("horario-ocupado");
         } else {
@@ -212,6 +230,40 @@ async function carregarHorarios(barbeiro, data) {
     });
 }
 
+// escutar horários em tempo real
+function escutarHorarios(barbeiro, data) {
+    if (!window.db || !window.collection || !window.onSnapshot) {
+        console.error("Firebase não está disponível no window.");
+        return;
+    }
+
+    if (unsubscribeHorarios) {
+        unsubscribeHorarios();
+        unsubscribeHorarios = null;
+    }
+
+    const horariosRef = window.collection(window.db, "horarios_ocupados");
+
+    unsubscribeHorarios = window.onSnapshot(horariosRef, (snapshot) => {
+        const ocupados = [];
+
+        snapshot.forEach((docSnap) => {
+            const d = docSnap.data();
+            if (d.barbeiro === barbeiro && d.data === data) {
+                ocupados.push(d.hora);
+            }
+        });
+
+        renderizarHorarios(barbeiro, data, ocupados);
+    }, (erro) => {
+        console.error("Erro ao escutar horários:", erro);
+        const horariosDiv = document.getElementById("horarios");
+        if (horariosDiv) {
+            horariosDiv.innerHTML = `<p class="horarios-vazio">Erro ao carregar horários.</p>`;
+        }
+    });
+}
+
 // confirmar
 const btnConfirmar = document.getElementById('btnConfirmarAgendamento');
 
@@ -228,6 +280,11 @@ btnConfirmar?.addEventListener('click', async () => {
 
     if (lembrarEmail && !emailCliente) {
         alert("Informe o e-mail");
+        return;
+    }
+
+    if (horarioJaPassou(agendamento.data, agendamento.hora)) {
+        alert("Esse horário já passou.");
         return;
     }
 
@@ -282,6 +339,11 @@ Hora: ${agendamento.hora}`;
             data: "",
             hora: ""
         };
+
+        if (unsubscribeHorarios) {
+            unsubscribeHorarios();
+            unsubscribeHorarios = null;
+        }
 
     } catch (e) {
         alert(e.message);

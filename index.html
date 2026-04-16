@@ -388,30 +388,32 @@
     <script src="./index.js"></script>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
-        const firebaseConfig = {
-            apiKey: "AIzaSyDNWWG7nPI7EXyuMlJmiHbeHAX6EXABWqQ",
-            authDomain: "barbearia-lado-a-lado.firebaseapp.com",
-            projectId: "barbearia-lado-a-lado",
-            storageBucket: "barbearia-lado-a-lado.firebasestorage.app",
-            messagingSenderId: "477542764196",
-            appId: "1:477542764196:web:691facb65d22e2f214a031"
-        };
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const functions = getFunctions(app);
+    const firebaseConfig = {
+        apiKey: "AIzaSyDNWWG7nPI7EXyuMlJmiHbeHAX6EXABWqQ",
+        authDomain: "barbearia-lado-a-lado.firebaseapp.com",
+        projectId: "barbearia-lado-a-lado",
+        storageBucket: "barbearia-lado-a-lado.firebasestorage.app",
+        messagingSenderId: "477542764196",
+        appId: "1:477542764196:web:691facb65d22e2f214a031"
+    };
 
-        console.log("Firebase conectado 🔥");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const functions = getFunctions(app);
 
-        window.db = db;
-        window.collection = collection;
-        window.getDocs = getDocs;
-        window.functions = functions;
-        window.httpsCallable = httpsCallable;
-    </script>
+    console.log("Firebase conectado 🔥");
+
+    window.db = db;
+    window.collection = collection;
+    window.getDocs = getDocs;
+    window.onSnapshot = onSnapshot;
+    window.functions = functions;
+    window.httpsCallable = httpsCallable;
+</script>
 </body>
 
 </html>
