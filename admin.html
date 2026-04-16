@@ -92,7 +92,8 @@
         let unsubscribeAgendamentos = null;
 
         function gerarHorarioId(barbeiro, data, hora) {
-            return `${barbeiro}_${data}_${hora}`.replace(/[^\w-]/g, "_");
+            const horaFormatada = hora.replace(":", "_");
+            return `${barbeiro}_${data}_${horaFormatada}`;
         }
 
         async function removerHorarioOcupado(dados) {
