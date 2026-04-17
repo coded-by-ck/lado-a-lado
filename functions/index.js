@@ -13,7 +13,33 @@ const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 const EMAIL_DESTINO = "miglegame@gmail.com";
 const EMAIL_FROM = "Barbearia Lado a Lado <onboarding@resend.dev>";
 
+const TIMEZONE_OFFSET = "-04:00";
 const BARBEIROS_VALIDOS = ["Matheus", "Diogo"];
+
+const SERVICOS = {
+  "Corte": { preco: "50,00" },
+  "Barba": { preco: "40,00" },
+  "Acabamento e barba": { preco: "50,00" },
+  "Alisamento capilar": { preco: "90,00" },
+  "Barba (com Matheus)": { preco: "45,00", barbeiroFixo: "Matheus" },
+  "Cabelo + barba + sobrancelha (com Matheus)": { preco: "100,00", barbeiroFixo: "Matheus" },
+  "Cabelo + sobrancelha - navalha": { preco: "55,00" },
+  "Corte + barba + sobrancelha": { preco: "90,00" },
+  "Corte e barba (com Matheus)": { preco: "90,00", barbeiroFixo: "Matheus" },
+  "Corte e cavanhaque": { preco: "60,00" },
+  "Corte e hidratação": { preco: "85,00" },
+  "Corte e sobrancelha (com Matheus)": { preco: "60,00", barbeiroFixo: "Matheus" },
+  "Corte sobrancelha e cavanhaque": { preco: "70,00" },
+  "Limpeza de pele": { preco: "60,00" },
+  "Luzes": { preco: "150,00" },
+  "Nevou": { preco: "170,00" },
+  "Pezinho": { preco: "20,00" },
+  "Pigmentação": { preco: "40,00" },
+  "Pigmentação + corte": { preco: "85,00" },
+  "Restauração capilar": { preco: "45,00" },
+  "Selagem": { preco: "120,00" }
+};
+
 const HORARIOS_VALIDOS = [
   "08:00", "08:30", "09:00", "09:30",
   "10:00", "10:30", "11:00", "11:30",
@@ -38,18 +64,19 @@ function validarEmail(email) {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function validarServicoPreco(servico, preco) {
-  return (
-    (servico === "Corte" && preco === "45,00") ||
-    (servico === "Barba" && preco === "40,00")
-  );
-}
-
 function gerarHorarioId(barbeiro, data, hora) {
   return `${barbeiro}_${data}_${hora}`.replace(/[^\w-]/g, "_");
 }
 
-// 🔒 CRIAR AGENDAMENTO COM TRAVA REAL
+function criarDataHoraMS(data, hora) {
+  return new Date(`${data}T${hora}:00${TIMEZONE_OFFSET}`);
+}
+
+function diaFechado(data) {
+  const d = new Date(`${data}T00:00:00${TIMEZONE_OFFSET}`);
+  return d.getUTCDay() === 0; // domingo
+}
+
 exports.criarAgendamento = onCall(async (request) => {
   const dados = request.data || {};
 
@@ -57,11 +84,11 @@ exports.criarAgendamento = onCall(async (request) => {
   const telefone = (dados.telefone || "").trim();
   const email = (dados.email || "").trim().toLowerCase();
   const lembreteEmail = Boolean(dados.lembreteEmail);
-  const servico = dados.servico || "";
-  const preco = dados.preco || "";
-  const barbeiro = dados.barbeiro || "";
-  const data = dados.data || "";
-  const hora = dados.hora || "";
+  const servico = (dados.servico || "").trim();
+  const preco = (dados.preco || "").trim();
+  const barbeiro = (dados.barbeiro || "").trim();
+  const data = (dados.data || "").trim();
+  const hora = (dados.hora || "").trim();
 
   if (nome.length < 2 || nome.length > 60) {
     throw new HttpsError("invalid-argument", "Nome inválido.");
@@ -75,10 +102,6 @@ exports.criarAgendamento = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Informe um e-mail válido para receber lembrete.");
   }
 
-  if (!validarServicoPreco(servico, preco)) {
-    throw new HttpsError("invalid-argument", "Serviço inválido.");
-  }
-
   if (!BARBEIROS_VALIDOS.includes(barbeiro)) {
     throw new HttpsError("invalid-argument", "Barbeiro inválido.");
   }
@@ -87,13 +110,29 @@ exports.criarAgendamento = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Data inválida.");
   }
 
+  if (diaFechado(data)) {
+    throw new HttpsError("failed-precondition", "Não atendemos aos domingos.");
+  }
+
   if (!HORARIOS_VALIDOS.includes(hora)) {
     throw new HttpsError("invalid-argument", "Horário inválido.");
   }
 
-  // bloqueia horário passado no backend também
+  if (!SERVICOS[servico]) {
+    throw new HttpsError("invalid-argument", "Serviço inválido.");
+  }
+
+  if (SERVICOS[servico].preco !== preco) {
+    throw new HttpsError("invalid-argument", "Preço inválido.");
+  }
+
+  if (SERVICOS[servico].barbeiroFixo && SERVICOS[servico].barbeiroFixo !== barbeiro) {
+    throw new HttpsError("invalid-argument", `Este serviço deve ser com ${SERVICOS[servico].barbeiroFixo}.`);
+  }
+
+  const dataHoraAgendamento = criarDataHoraMS(data, hora);
   const agora = new Date();
-  const dataHoraAgendamento = new Date(`${data}T${hora}:00`);
+
   if (dataHoraAgendamento <= agora) {
     throw new HttpsError("failed-precondition", "Não é possível agendar um horário que já passou.");
   }
@@ -139,7 +178,6 @@ exports.criarAgendamento = onCall(async (request) => {
   };
 });
 
-// 🔥 EMAIL PARA O ADMIN NA HORA DO AGENDAMENTO
 exports.enviarEmailNovoAgendamento = onDocumentCreated(
   {
     document: "agendamentos/{id}",
@@ -169,7 +207,6 @@ exports.enviarEmailNovoAgendamento = onDocumentCreated(
   }
 );
 
-// ⏰ LEMBRETE 30 MIN ANTES PARA O CLIENTE
 exports.lembrete30min = onSchedule(
   {
     schedule: "every 5 minutes",
@@ -185,8 +222,8 @@ exports.lembrete30min = onSchedule(
 
     const snapshot = await db.collection("agendamentos").get();
 
-    for (const doc of snapshot.docs) {
-      const d = doc.data();
+    for (const docSnap of snapshot.docs) {
+      const d = docSnap.data();
 
       if (d.lembrete30Enviado) continue;
       if (d.status === "cancelado" || d.status === "concluido") continue;
@@ -194,7 +231,7 @@ exports.lembrete30min = onSchedule(
       if (!d.email || !validarEmail(d.email)) continue;
       if (!d.data || !d.hora) continue;
 
-      const dataHora = new Date(`${d.data}T${d.hora}:00`);
+      const dataHora = criarDataHoraMS(d.data, d.hora);
 
       if (dataHora >= inicio && dataHora <= fim) {
         await resend.emails.send({
@@ -212,7 +249,7 @@ exports.lembrete30min = onSchedule(
           `,
         });
 
-        await doc.ref.update({
+        await docSnap.ref.update({
           lembrete30Enviado: true,
         });
 

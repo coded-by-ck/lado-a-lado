@@ -95,14 +95,12 @@
         let unsubscribeAgendamentos = null;
 
         function gerarHorarioId(barbeiro, data, hora) {
-            const horaFormatada = String(hora).replace(":", "_");
-            return `${barbeiro}_${data}_${horaFormatada}`;
+            return `${barbeiro}_${data}_${hora}`.replace(/[^\w-]/g, "_");
         }
 
         async function removerHorarioOcupado(dados, agendamentoId) {
             const horariosRef = collection(db, "horarios_ocupados");
 
-            // 1) tenta apagar pelo ID novo
             const horarioId = gerarHorarioId(dados.barbeiro, dados.data, dados.hora);
             const horarioRef = doc(db, "horarios_ocupados", horarioId);
 
@@ -115,7 +113,6 @@
                 console.warn("Falha ao remover por ID direto:", erro);
             }
 
-            // 2) tenta apagar docs pelo agendamentoId
             try {
                 const qAgendamentoId = query(horariosRef, where("agendamentoId", "==", agendamentoId));
                 const snapAgendamentoId = await getDocs(qAgendamentoId);
@@ -127,7 +124,6 @@
                 console.warn("Falha ao remover por agendamentoId:", erro);
             }
 
-            // 3) fallback por barbeiro + data + hora
             try {
                 const qCampos = query(
                     horariosRef,
@@ -179,7 +175,7 @@
                 agendamentosFiltrados = agendamentosFiltrados.filter(item => item.data === hoje);
             } else if (filtroAtual === "proximos") {
                 agendamentosFiltrados = agendamentosFiltrados.filter(item => {
-                    const dataHora = new Date(`${item.data}T${item.hora || "00:00"}`);
+                    const dataHora = new Date(`${item.data}T${item.hora || "00:00"}-04:00`);
                     return dataHora >= agora && item.status !== "cancelado";
                 });
             }
@@ -205,7 +201,7 @@
 
                     <div class="card-info">
                         <p><strong>Telefone:</strong> <a class="telefone-link" href="https://wa.me/55${String(dados.telefone).replace(/\D/g, "")}" target="_blank">${dados.telefone}</a></p>
-                        <p><strong>E-mail:</strong> ${dados.email}</p>
+                        <p><strong>E-mail:</strong> ${dados.email || "-"}</p>
                         <p><strong>Serviço:</strong> ${dados.servico}</p>
                         <p><strong>Preço:</strong> R$ ${dados.preco}</p>
                         <p><strong>Barbeiro:</strong> ${dados.barbeiro}</p>
@@ -246,7 +242,6 @@
 
                         await deleteDoc(doc(db, "agendamentos", id));
                         alert("Agendamento excluído com sucesso.");
-
                     } catch (erro) {
                         console.error("Erro ao excluir agendamento:", erro);
                         alert("Erro ao excluir agendamento.");
@@ -276,7 +271,6 @@
                 if (novoStatus === "pendente" || novoStatus === "concluido") {
                     await recriarHorarioOcupado(dados, id);
                 }
-
             } catch (erro) {
                 console.error("Erro ao atualizar status:", erro);
                 alert("Erro ao atualizar status");
@@ -294,7 +288,6 @@
 
                 snapshot.forEach((docSnap) => {
                     const dados = docSnap.data();
-
                     agendamentosGlobal.push({
                         id: docSnap.id,
                         nome: dados.nome || "Sem nome",
@@ -310,8 +303,8 @@
                 });
 
                 agendamentosGlobal.sort((a, b) => {
-                    const dataHoraA = new Date(`${a.data}T${a.hora || "00:00"}`);
-                    const dataHoraB = new Date(`${b.data}T${b.hora || "00:00"}`);
+                    const dataHoraA = new Date(`${a.data}T${a.hora || "00:00"}-04:00`);
+                    const dataHoraB = new Date(`${b.data}T${b.hora || "00:00"}-04:00`);
                     return dataHoraA - dataHoraB;
                 });
 
@@ -326,7 +319,6 @@
             botao.addEventListener("click", () => {
                 botoesFiltro.forEach((btn) => btn.classList.remove("ativo"));
                 botao.classList.add("ativo");
-
                 filtroAtual = botao.getAttribute("data-filtro");
                 renderizarAgendamentos();
             });

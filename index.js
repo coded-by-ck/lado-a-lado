@@ -5,6 +5,50 @@ let indexAtual = 0;
 let intervalo;
 let unsubscribeHorarios = null;
 
+const TIMEZONE_OFFSET = "-04:00";
+
+const SERVICOS = {
+    "Corte": { preco: "50,00" },
+    "Barba": { preco: "40,00" },
+    "Acabamento e barba": { preco: "50,00" },
+    "Alisamento capilar": { preco: "90,00" },
+    "Barba (com Matheus)": { preco: "45,00", barbeiroFixo: "Matheus" },
+    "Cabelo + barba + sobrancelha (com Matheus)": { preco: "100,00", barbeiroFixo: "Matheus" },
+    "Cabelo + sobrancelha - navalha": { preco: "55,00" },
+    "Corte + barba + sobrancelha": { preco: "90,00" },
+    "Corte e barba (com Matheus)": { preco: "90,00", barbeiroFixo: "Matheus" },
+    "Corte e cavanhaque": { preco: "60,00" },
+    "Corte e hidratação": { preco: "85,00" },
+    "Corte e sobrancelha (com Matheus)": { preco: "60,00", barbeiroFixo: "Matheus" },
+    "Corte sobrancelha e cavanhaque": { preco: "70,00" },
+    "Limpeza de pele": { preco: "60,00" },
+    "Luzes": { preco: "150,00" },
+    "Nevou": { preco: "170,00" },
+    "Pezinho": { preco: "20,00" },
+    "Pigmentação": { preco: "40,00" },
+    "Pigmentação + corte": { preco: "85,00" },
+    "Restauração capilar": { preco: "45,00" },
+    "Selagem": { preco: "120,00" }
+};
+
+const HORARIOS_VALIDOS = [
+    "08:00", "08:30", "09:00", "09:30",
+    "10:00", "10:30", "11:00", "11:30",
+    "13:00", "13:30", "14:00", "14:30",
+    "15:00", "15:30", "16:00", "16:30",
+    "17:00", "17:30", "18:00"
+];
+
+const WHATSAPP_BARBEARIA = "556799995999";
+
+let agendamento = {
+    servico: "",
+    preco: "",
+    barbeiro: "",
+    data: "",
+    hora: ""
+};
+
 function mudarSlide(index) {
     botoes.forEach((btn) => btn.classList.remove('selecionado'));
     imagens.forEach((img) => img.classList.remove('ativa'));
@@ -37,34 +81,12 @@ if (imagens.length > 0 && imagens.length === botoes.length) {
     iniciarAutoplay();
 }
 
-console.log("Carrossel Premium Ativado!");
-
-let agendamento = {
-    servico: "",
-    preco: "",
-    barbeiro: "",
-    data: "",
-    hora: ""
-};
-
-const horariosBase = [
-    "08:00", "08:30", "09:00", "09:30",
-    "10:00", "10:30", "11:00", "11:30",
-    "13:00", "13:30", "14:00", "14:30",
-    "15:00", "15:30", "16:00", "16:30",
-    "17:00", "17:30", "18:00"
-];
-
-const WHATSAPP_BARBEARIA = "556799995999";
-
-// categorias
 document.querySelectorAll('.btn-categoria').forEach((btn) => {
     btn.addEventListener('click', () => {
         const listaAtual = btn.nextElementSibling;
         if (!listaAtual) return;
 
         const todasListas = document.querySelectorAll('.servicos-lista');
-
         todasListas.forEach((lista) => {
             if (lista !== listaAtual) lista.style.display = 'none';
         });
@@ -73,7 +95,6 @@ document.querySelectorAll('.btn-categoria').forEach((btn) => {
     });
 });
 
-// escolher serviço
 document.querySelectorAll('.item-servico').forEach((item) => {
     const btn = item.querySelector('.btn-selecionar');
 
@@ -107,9 +128,7 @@ document.querySelectorAll('.item-servico').forEach((item) => {
     });
 });
 
-// voltar
 const btnVoltar = document.querySelector('.btn-voltar');
-
 btnVoltar?.addEventListener('click', () => {
     const passoServicos = document.getElementById('passo-servicos');
     const passoProfissionais = document.getElementById('passo-profissionais');
@@ -130,13 +149,20 @@ btnVoltar?.addEventListener('click', () => {
     }
 });
 
-// escolher barbeiro
 document.querySelectorAll('.btn-escolher-barbeiro').forEach((btn) => {
     btn.addEventListener('click', function () {
         const card = this.parentElement;
         if (!card) return;
 
-        agendamento.barbeiro = card.dataset.barbeiro || "";
+        const barbeiroEscolhido = card.dataset.barbeiro || "";
+
+        if (SERVICOS[agendamento.servico]?.barbeiroFixo &&
+            SERVICOS[agendamento.servico].barbeiroFixo !== barbeiroEscolhido) {
+            alert(`Esse serviço deve ser com ${SERVICOS[agendamento.servico].barbeiroFixo}.`);
+            return;
+        }
+
+        agendamento.barbeiro = barbeiroEscolhido;
         agendamento.data = "";
         agendamento.hora = "";
 
@@ -168,38 +194,48 @@ document.querySelectorAll('.btn-escolher-barbeiro').forEach((btn) => {
     });
 });
 
-// data
+function criarDataHoraMS(data, hora) {
+    return new Date(`${data}T${hora}:00${TIMEZONE_OFFSET}`);
+}
+
+function horarioJaPassou(data, hora) {
+    const agora = new Date();
+    const dataHora = criarDataHoraMS(data, hora);
+    return dataHora <= agora;
+}
+
+function diaFechado(data) {
+    const d = criarDataHoraMS(data, "00:00");
+    return d.getUTCDay() === 0;
+}
+
 document.getElementById("data")?.addEventListener("change", (e) => {
     agendamento.data = e.target.value;
     agendamento.hora = "";
 
     if (!agendamento.barbeiro || !agendamento.data) return;
+
+    if (diaFechado(agendamento.data)) {
+        const horariosDiv = document.getElementById("horarios");
+        if (horariosDiv) horariosDiv.innerHTML = `<p class="horarios-vazio">Fechado neste dia.</p>`;
+        return;
+    }
+
     escutarHorarios(agendamento.barbeiro, agendamento.data);
 });
 
-// tempo passado
-function horarioJaPassou(data, hora) {
-    const agora = new Date();
-    const dataHora = new Date(`${data}T${hora}:00`);
-    return dataHora <= agora;
-}
-
-// renderizar horários
 function renderizarHorarios(barbeiro, data, ocupados) {
     const horariosDiv = document.getElementById("horarios");
     if (!horariosDiv) return;
 
     horariosDiv.innerHTML = "";
 
-    const dataObj = new Date(`${data}T00:00:00`);
-    const diaSemana = dataObj.getDay();
-
-    if (diaSemana === 0) {
+    if (diaFechado(data)) {
         horariosDiv.innerHTML = `<p class="horarios-vazio">Fechado neste dia.</p>`;
         return;
     }
 
-    horariosBase.forEach(hora => {
+    HORARIOS_VALIDOS.forEach(hora => {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.innerText = hora;
@@ -230,12 +266,8 @@ function renderizarHorarios(barbeiro, data, ocupados) {
     });
 }
 
-// escutar horários em tempo real
 function escutarHorarios(barbeiro, data) {
-    if (!window.db || !window.collection || !window.onSnapshot) {
-        console.error("Firebase não está disponível no window.");
-        return;
-    }
+    if (!window.db || !window.collection || !window.onSnapshot) return;
 
     if (unsubscribeHorarios) {
         unsubscribeHorarios();
@@ -255,8 +287,7 @@ function escutarHorarios(barbeiro, data) {
         });
 
         renderizarHorarios(barbeiro, data, ocupados);
-    }, (erro) => {
-        console.error("Erro ao escutar horários:", erro);
+    }, () => {
         const horariosDiv = document.getElementById("horarios");
         if (horariosDiv) {
             horariosDiv.innerHTML = `<p class="horarios-vazio">Erro ao carregar horários.</p>`;
@@ -264,7 +295,6 @@ function escutarHorarios(barbeiro, data) {
     });
 }
 
-// confirmar
 const btnConfirmar = document.getElementById('btnConfirmarAgendamento');
 
 btnConfirmar?.addEventListener('click', async () => {
@@ -274,12 +304,12 @@ btnConfirmar?.addEventListener('click', async () => {
     const lembrarEmail = document.getElementById('lembrarEmail')?.checked || false;
 
     if (!nomeCliente || !telefoneCliente || !agendamento.servico || !agendamento.barbeiro || !agendamento.data || !agendamento.hora) {
-        alert("Preencha tudo");
+        alert("Preencha tudo.");
         return;
     }
 
     if (lembrarEmail && !emailCliente) {
-        alert("Informe o e-mail");
+        alert("Informe o e-mail.");
         return;
     }
 
@@ -299,7 +329,11 @@ btnConfirmar?.addEventListener('click', async () => {
             telefone: telefoneCliente,
             email: emailCliente,
             lembreteEmail: lembrarEmail,
-            ...agendamento
+            servico: agendamento.servico,
+            preco: agendamento.preco,
+            barbeiro: agendamento.barbeiro,
+            data: agendamento.data,
+            hora: agendamento.hora
         });
 
         if ("vibrate" in navigator) {
@@ -346,14 +380,13 @@ Hora: ${agendamento.hora}`;
         }
 
     } catch (e) {
-        alert(e.message);
+        alert(e.message || "Erro ao agendar.");
     }
 
     btnConfirmar.disabled = false;
     btnConfirmar.textContent = "Confirmar Agendamento";
 });
 
-// modal
 function abrirModalSucesso(mensagemWhatsApp, dadosResumo) {
     const modal = document.getElementById("modalSucesso");
     const btnFechar = document.getElementById("fecharModalSucesso");
@@ -394,7 +427,6 @@ function abrirModalSucesso(mensagemWhatsApp, dadosResumo) {
     };
 }
 
-// menu mobile
 function abrirMenu() {
     const menuLateral = document.getElementById("menuLateral");
     if (menuLateral) menuLateral.classList.add("aberto");
@@ -414,7 +446,6 @@ document.querySelectorAll('.menu-lateral a').forEach((link) => {
     });
 });
 
-// flatpickr
 if (typeof flatpickr !== "undefined") {
     flatpickr("#data", {
         dateFormat: "Y-m-d",
