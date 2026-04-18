@@ -4,25 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lado a Lado</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-
     <link rel="stylesheet" href="./CSS/style.css">
     <link rel="stylesheet" href="./CSS/responsivo.css">
     <link rel="shortcut icon" href="./img/abelhinha.png" type="image/x-icon">
-
-
-
-    <title>Lado a Lado</title>
 </head>
 
 <body>
-
-    <!-- HEADER -->
     <header>
         <a href="#home"><img src="./img/abelhinha.png" class="logo" alt="Logo"></a>
 
@@ -58,30 +52,24 @@
                 <li><a href="#feedbacks" onclick="fecharMenu()">Feedbacks</a></li>
                 <li><a href="#localizacao" onclick="fecharMenu()">Localização</a></li>
             </ul>
-            <div class="social-mobile">
-                <a href="#"><i class="fab fa-whatsapp"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-            </div>
         </div>
     </header>
-    <!-- CARROSSEL -->
+
     <main>
         <div class="carrossel" id="home">
-            <img class="imagem ativa img1" src="./img/background-div.jpg">
-            <img class="imagem img2" src="./img/tenis.jpg">
-            <img class="imagem img3" src="./img/barber-3.jpg">
-            <img class="imagem img4" src="./img/barber-4.jpg">
+            <img class="imagem ativa img1" src="./img/background-div.jpg" alt="">
+            <img class="imagem img2" src="./img/tenis.jpg" alt="">
+            <img class="imagem img3" src="./img/barber-3.jpg" alt="">
+            <img class="imagem img4" src="./img/barber-4.jpg" alt="">
 
             <div class="conteudo-hero">
-                <img src="./img/lado-a-deus.png" class="logo-centro">
+                <img src="./img/lado-a-deus.png" class="logo-centro" alt="">
                 <h1>CUIDAMOS DA SUA <strong>AUTOESTIMA</strong></h1>
                 <p>CORTE NO TEMPO ESTILO ATEMPORAL</p>
                 <a href="#servicos" class="btn-agendar">AGENDE SEU HORARIO</a>
             </div>
-
         </div>
 
-        <!-- BOTÕES -->
         <div class="botoes-carrossel">
             <button class="botao selecionado"></button>
             <button class="botao"></button>
@@ -104,59 +92,13 @@
                 <p class="descricao">
                     A Barbearia Lado a Lado é um espaço dedicado a oferecer serviços de barbearia de alta qualidade,
                     onde a tradição e a modernidade se encontram para criar uma experiência única.
-                    Fundada com o objetivo de proporcionar cortes de cabelo e cuidados excepcionais,
-                    nos destacamos pela nossa equipe apaixonada e um ambiente onde você pode relaxar e se sentir
-                    valorizado.
                 </p>
                 <div class="detalhe-barber">✂</div>
             </div>
         </div>
     </section>
-    <section class="origem" id="origem">
-        <div class="container-origem">
-            <div class="origem-conteudo">
-                <h2 class="titulo-sessao">Como tudo <span>Começou</span></h2>
-                <p class="texto-destaque">De um sonho de bancada à referência na região.</p>
-                <p class="descricao">
-                    Tudo começou quando eu varria o chão de uma barbearia e colocava as toalhas para esquentar. Eu não
-                    ganhava nada para fazer isso… Na real, ganhava muito: ganhava conhecimento, aprendia técnicas de
-                    corte — mas ainda não cortava.
-                    Hoje, sendo proprietário da @ladoalado_barbearia , varrer o chão é uma das partes mais gostosas!
-                    Hahahah.
-                    Muito obrigado por tudo, @ladoalado_barbearia, e aos meus parceiros que trabalham comigo!
-                    @mr.cortexx e @pablosilva_barberr
-                </p>
-                <div class="detalhe-barber">💈</div>
-            </div>
 
-            <div class="origem-imagem">
-                <div class="moldura-dourada-direita">
-                    <img src="./img/barber-1.jpg" alt="Origem da Barbearia" class="foto-origem">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- <section class="equipe-secao" id="equipe">
-        <div class="container-equipe-v2">
-            <div class="equipe-info">
-                <h2 class="titulo-sessao">Nossa <span>Equipe</span></h2>
-                <p class="texto-destaque">Excelência em cada detalhe, de geração em geração.</p>
-                <p class="descricao">
-                    Nossos profissionais são treinados para entregar mais do que um corte: entregamos confiança.
-                    Com especialistas em barbas clássicas e cortes modernos, a equipe Lado a Lado está pronta
-                    para transformar o seu visual com a precisão que você merece.
-                </p>
-            </div>
-
-            <div class="equipe-banner-retangulo">
-                <div class="moldura-dourada-equipe">
-                    <img src="./img/barber-4.jpg" alt="Equipe Lado a Lado" class="foto-wide">
-                </div>
-            </div>
-        </div>
-    </section> -->
-      <section class="agendamento-premium" id="servicos">
+    <section class="agendamento-premium" id="servicos">
         <div class="fluxo-agendamento">
             <h2 class="titulo-sessao">Agende seu <span>Estilo</span></h2>
 
@@ -330,12 +272,12 @@
             </div>
         </div>
     </section>
+
     <section class="feedbacks" id="feedbacks">
         <div class="container-feedbacks">
             <div class="sessao-header">
                 <h2 class="titulo-sessao">O que dizem os <span>Clientes</span></h2>
                 <div class="google-rating">
-
                     <span>Avaliação 5.0 no Google Maps</span>
                 </div>
             </div>
@@ -343,42 +285,29 @@
             <div class="grade-feedbacks">
                 <div class="card-feedback">
                     <div class="estrelas">★★★★★</div>
-                    <p class="depoimento">"Melhor barbearia da região! O atendimento do Matheus é diferenciado e o
-                        ambiente é muito top. Recomendo de olhos fechados."</p>
+                    <p class="depoimento">"Melhor barbearia da região!"</p>
                     <div class="cliente-info">
                         <strong>Ricardo Silva</strong>
-                        <span>Cliente há 2 anos</span>
                     </div>
                 </div>
-
                 <div class="card-feedback">
                     <div class="estrelas">★★★★★</div>
-                    <p class="depoimento">"Lugar de extremo bom gosto. O Pablo é um mestre na tesoura, o corte ficou
-                        exatamente como eu queria. Cerveja gelada e resenha boa."</p>
+                    <p class="depoimento">"Lugar de extremo bom gosto."</p>
                     <div class="cliente-info">
                         <strong>André Oliveira</strong>
-                        <span>Local Guide</span>
                     </div>
                 </div>
-
                 <div class="card-feedback">
                     <div class="estrelas">★★★★★</div>
-                    <p class="depoimento">"Fiz a barba com o Marcos e foi uma experiência relaxante. Toalha quente e
-                        produtos de primeira. Nota 10!"</p>
+                    <p class="depoimento">"Experiência relaxante. Nota 10!"</p>
                     <div class="cliente-info">
                         <strong>Bruno Souza</strong>
-                        <span>Cliente VIP</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="feedback-footer">
-                <a href="LINK_DO_SEU_GOOGLE_MAPS_AQUI" target="_blank" class="btn-google">
-                    Ver todas no Google
-                </a>
             </div>
         </div>
     </section>
+
     <section class="localizacao" id="localizacao">
         <div class="container-local">
             <div class="local-grid">
@@ -422,12 +351,8 @@
                 <div class="rodape-social">
                     <h4>Siga-nos</h4>
                     <div class="social-icons">
-                        <a href="https://www.instagram.com/ladoalado_barbearia/" aria-label="Instagram"
-                            target="_blank"><i class="fab fa-instagram"></i></a>
-                        <a href="https://contate.me/556799995999" aria-label="WhatsApp" target="_blank"><i
-                                class="fab fa-whatsapp"></i></a>
-                        <a href="https://web.facebook.com/matheus.hermenegildo.1" aria-label="Facebook"
-                            target="_blank"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/ladoalado_barbearia/" aria-label="Instagram" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://contate.me/556799995999" aria-label="WhatsApp" target="_blank"><i class="fab fa-whatsapp"></i></a>
                     </div>
                 </div>
             </div>
@@ -441,6 +366,7 @@
             </div>
         </div>
     </footer>
+
     <div id="modalSucesso" class="modal-sucesso">
         <div class="modal-sucesso-box">
             <div class="modal-icone">💈</div>
@@ -455,8 +381,6 @@
             </div>
         </div>
     </div>
-    <!-- JS -->
-
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
@@ -489,3 +413,26 @@
 </body>
 
 </html>
+
+
+<section class="localizacao" id="localizacao">
+        <div class="container-local">
+            <div class="local-grid">
+                <div class="local-info">
+                    <h2 class="titulo-sessao">Onde <span>Estamos</span></h2>
+                    <p class="endereco">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Av. Brasil, 324 - Centro<br>
+                        Ivinhema - MS, 79740-000
+                    </p>
+                </div>
+
+                <div class="local-mapa">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3691.2667328915936!2d-53.824322699999996!3d-22.305749899999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x948ebba0b6d17a9f%3A0xc3292510ad2968dd!2sLado%20a%20Lado!5e0!3m2!1spt-BR!2sbr!4v1775319709361!5m2!1spt-BR!2sbr"
+                        width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
