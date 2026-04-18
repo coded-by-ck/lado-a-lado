@@ -1,457 +1,300 @@
-const imagens = document.querySelectorAll('.imagem');
-const botoes = document.querySelectorAll('.botao');
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { defineSecret } = require("firebase-functions/params");
+const admin = require("firebase-admin");
+const { Resend } = require("resend");
 
-let indexAtual = 0;
-let intervalo;
-let unsubscribeHorarios = null;
+admin.initializeApp();
+
+const db = admin.firestore();
+const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
+
+const EMAIL_DESTINO = "miglegame@gmail.com";
+const EMAIL_FROM = "Barbearia Lado a Lado <onboarding@resend.dev>";
 
 const TIMEZONE_OFFSET = "-04:00";
+const BARBEIROS_VALIDOS = ["Matheus", "Diogo"];
 
 const SERVICOS = {
-    "Corte": { preco: "50,00" },
-    "Barba": { preco: "40,00" },
-    "Acabamento e barba": { preco: "50,00" },
-    "Alisamento capilar": { preco: "90,00" },
-    "Barba (com Matheus)": { preco: "45,00", barbeiroFixo: "Matheus" },
-    "Cabelo + barba + sobrancelha (com Matheus)": { preco: "100,00", barbeiroFixo: "Matheus" },
-    "Cabelo + sobrancelha - navalha": { preco: "55,00" },
-    "Corte + barba + sobrancelha": { preco: "90,00" },
-    "Corte e barba (com Matheus)": { preco: "90,00", barbeiroFixo: "Matheus" },
-    "Corte e cavanhaque": { preco: "60,00" },
-    "Corte e hidratação": { preco: "85,00" },
-    "Corte e sobrancelha (com Matheus)": { preco: "60,00", barbeiroFixo: "Matheus" },
-    "Corte sobrancelha e cavanhaque": { preco: "70,00" },
-    "Limpeza de pele": { preco: "60,00" },
-    "Luzes": { preco: "150,00" },
-    "Nevou": { preco: "170,00" },
-    "Pezinho": { preco: "20,00" },
-    "Pigmentação": { preco: "40,00" },
-    "Pigmentação + corte": { preco: "85,00" },
-    "Restauração capilar": { preco: "45,00" },
-    "Selagem": { preco: "120,00" }
+  "Corte": { preco: "50,00", duracao: 30 },
+  "Barba": { preco: "40,00", duracao: 30 },
+  "Acabamento e barba": { preco: "50,00", duracao: 30 },
+  "Alisamento capilar": { preco: "90,00", duracao: 90 },
+  "Barba (com Matheus)": { preco: "45,00", duracao: 30, barbeiroFixo: "Matheus" },
+  "Cabelo + barba + sobrancelha (com Matheus)": { preco: "100,00", duracao: 60, barbeiroFixo: "Matheus" },
+  "Cabelo + sobrancelha - navalha": { preco: "55,00", duracao: 30 },
+  "Corte + barba + sobrancelha": { preco: "90,00", duracao: 60 },
+  "Corte e barba (com Matheus)": { preco: "90,00", duracao: 60, barbeiroFixo: "Matheus" },
+  "Corte e cavanhaque": { preco: "60,00", duracao: 30 },
+  "Corte e hidratação": { preco: "85,00", duracao: 30 },
+  "Corte e sobrancelha (com Matheus)": { preco: "60,00", duracao: 30, barbeiroFixo: "Matheus" },
+  "Corte sobrancelha e cavanhaque": { preco: "70,00", duracao: 30 },
+  "Limpeza de pele": { preco: "60,00", duracao: 30 },
+  "Luzes": { preco: "150,00", duracao: 30 },
+  "Nevou": { preco: "170,00", duracao: 120 },
+  "Pezinho": { preco: "20,00", duracao: 30 },
+  "Pigmentação": { preco: "40,00", duracao: 30 },
+  "Pigmentação + corte": { preco: "85,00", duracao: 60 },
+  "Restauração capilar": { preco: "45,00", duracao: 30 },
+  "Selagem": { preco: "120,00", duracao: 60 }
 };
 
 const HORARIOS_VALIDOS = [
-    "08:00", "08:30", "09:00", "09:30",
-    "10:00", "10:30", "11:00", "11:30",
-    "13:00", "13:30", "14:00", "14:30",
-    "15:00", "15:30", "16:00", "16:30",
-    "17:00", "17:30", "18:00"
+  "08:00", "08:30", "09:00", "09:30",
+  "10:00", "10:30", "11:00", "11:30",
+  "13:00", "13:30", "14:00", "14:30",
+  "15:00", "15:30", "16:00", "16:30",
+  "17:00", "17:30", "18:00"
 ];
 
-const WHATSAPP_BARBEARIA = "556799995999";
-
-let agendamento = {
-    servico: "",
-    preco: "",
-    barbeiro: "",
-    data: "",
-    hora: ""
-};
-
-function mudarSlide(index) {
-    botoes.forEach((btn) => btn.classList.remove('selecionado'));
-    imagens.forEach((img) => img.classList.remove('ativa'));
-
-    if (imagens[index] && botoes[index]) {
-        imagens[index].classList.add('ativa');
-        botoes[index].classList.add('selecionado');
-        indexAtual = index;
-    }
+function validarTelefone(telefone) {
+  return typeof telefone === "string" &&
+    telefone.length >= 8 &&
+    telefone.length <= 20 &&
+    /^[0-9+() -]+$/.test(telefone);
 }
 
-function proximoSlide() {
-    const proximo = (indexAtual + 1) % imagens.length;
-    mudarSlide(proximo);
+function validarData(data) {
+  return typeof data === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data);
 }
 
-function iniciarAutoplay() {
-    clearInterval(intervalo);
-    intervalo = setInterval(proximoSlide, 4000);
+function validarEmail(email) {
+  return typeof email === "string" &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-if (imagens.length > 0 && imagens.length === botoes.length) {
-    botoes.forEach((botao, i) => {
-        botao.addEventListener('click', () => {
-            mudarSlide(i);
-            iniciarAutoplay();
-        });
-    });
-
-    iniciarAutoplay();
+function gerarHorarioId(barbeiro, data, hora) {
+  return `${barbeiro}_${data}_${hora}`.replace(/[^\w-]/g, "_");
 }
-
-document.querySelectorAll('.btn-categoria').forEach((btn) => {
-    btn.addEventListener('click', () => {
-        const listaAtual = btn.nextElementSibling;
-        if (!listaAtual) return;
-
-        const todasListas = document.querySelectorAll('.servicos-lista');
-        todasListas.forEach((lista) => {
-            if (lista !== listaAtual) lista.style.display = 'none';
-        });
-
-        listaAtual.style.display = listaAtual.style.display === 'block' ? 'none' : 'block';
-    });
-});
-
-document.querySelectorAll('.item-servico').forEach((item) => {
-    const btn = item.querySelector('.btn-selecionar');
-
-    btn?.addEventListener('click', () => {
-        agendamento.servico = item.dataset.nome || "";
-        agendamento.preco = item.dataset.preco || "";
-        agendamento.barbeiro = "";
-        agendamento.data = "";
-        agendamento.hora = "";
-
-        const passoProfissionais = document.getElementById('passo-profissionais');
-        const formAgendamento = document.getElementById('formAgendamento');
-        const horariosDiv = document.getElementById('horarios');
-
-        if (passoProfissionais) {
-            passoProfissionais.classList.add('ativo');
-            passoProfissionais.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        if (formAgendamento) formAgendamento.style.display = 'none';
-        if (horariosDiv) horariosDiv.innerHTML = "";
-
-        document.querySelectorAll('.card-profissional').forEach((card) => {
-            card.classList.remove('selecionado');
-        });
-
-        if (unsubscribeHorarios) {
-            unsubscribeHorarios();
-            unsubscribeHorarios = null;
-        }
-    });
-});
-
-const btnVoltar = document.querySelector('.btn-voltar');
-btnVoltar?.addEventListener('click', () => {
-    const passoServicos = document.getElementById('passo-servicos');
-    const passoProfissionais = document.getElementById('passo-profissionais');
-    const formAgendamento = document.getElementById('formAgendamento');
-
-    if (passoProfissionais) passoProfissionais.classList.remove('ativo');
-
-    if (passoServicos) {
-        passoServicos.classList.add('ativo');
-        passoServicos.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    if (formAgendamento) formAgendamento.style.display = 'none';
-
-    if (unsubscribeHorarios) {
-        unsubscribeHorarios();
-        unsubscribeHorarios = null;
-    }
-});
-
-document.querySelectorAll('.btn-escolher-barbeiro').forEach((btn) => {
-    btn.addEventListener('click', function () {
-        const card = this.parentElement;
-        if (!card) return;
-
-        const barbeiroEscolhido = card.dataset.barbeiro || "";
-
-        if (SERVICOS[agendamento.servico]?.barbeiroFixo &&
-            SERVICOS[agendamento.servico].barbeiroFixo !== barbeiroEscolhido) {
-            alert(`Esse serviço deve ser com ${SERVICOS[agendamento.servico].barbeiroFixo}.`);
-            return;
-        }
-
-        agendamento.barbeiro = barbeiroEscolhido;
-        agendamento.data = "";
-        agendamento.hora = "";
-
-        document.querySelectorAll('.card-profissional').forEach((cardItem) => {
-            cardItem.classList.remove('selecionado');
-        });
-
-        card.classList.add('selecionado');
-
-        const formAgendamento = document.getElementById('formAgendamento');
-        const horariosDiv = document.getElementById('horarios');
-        const inputData = document.getElementById('data');
-
-        if (formAgendamento) {
-            formAgendamento.style.display = 'block';
-
-            setTimeout(() => {
-                formAgendamento.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 150);
-        }
-
-        if (horariosDiv) horariosDiv.innerHTML = "";
-        if (inputData) inputData.value = "";
-
-        if (unsubscribeHorarios) {
-            unsubscribeHorarios();
-            unsubscribeHorarios = null;
-        }
-    });
-});
 
 function criarDataHoraMS(data, hora) {
-    return new Date(`${data}T${hora}:00${TIMEZONE_OFFSET}`);
-}
-
-function horarioJaPassou(data, hora) {
-    const agora = new Date();
-    const dataHora = criarDataHoraMS(data, hora);
-    return dataHora <= agora;
+  return new Date(`${data}T${hora}:00${TIMEZONE_OFFSET}`);
 }
 
 function diaFechado(data) {
-    const d = criarDataHoraMS(data, "00:00");
-    return d.getUTCDay() === 0;
+  const d = new Date(`${data}T00:00:00${TIMEZONE_OFFSET}`);
+  return d.getUTCDay() === 0;
 }
 
-document.getElementById("data")?.addEventListener("change", (e) => {
-    agendamento.data = e.target.value;
-    agendamento.hora = "";
+function adicionarMinutos(dataHora, minutos) {
+  return new Date(dataHora.getTime() + minutos * 60000);
+}
 
-    if (!agendamento.barbeiro || !agendamento.data) return;
+function formatarHoraMS(dataHora) {
+  const h = String(dataHora.getUTCHours()).padStart(2, "0");
+  const m = String(dataHora.getUTCMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
+}
 
-    if (diaFechado(agendamento.data)) {
-        const horariosDiv = document.getElementById("horarios");
-        if (horariosDiv) horariosDiv.innerHTML = `<p class="horarios-vazio">Fechado neste dia.</p>`;
-        return;
+function calcularSlots(data, horaInicial, duracao) {
+  const quantidade = Math.ceil(duracao / 30);
+  const inicio = criarDataHoraMS(data, horaInicial);
+  const slots = [];
+
+  for (let i = 0; i < quantidade; i++) {
+    const atual = adicionarMinutos(inicio, i * 30);
+    const horaSlot = formatarHoraMS(atual);
+
+    if (!HORARIOS_VALIDOS.includes(horaSlot)) {
+      throw new HttpsError("failed-precondition", "Esse serviço não cabe nesse horário.");
     }
 
-    escutarHorarios(agendamento.barbeiro, agendamento.data);
+    slots.push(horaSlot);
+  }
+
+  return slots;
+}
+
+exports.criarAgendamento = onCall(async (request) => {
+  const dados = request.data || {};
+
+  const nome = (dados.nome || "").trim();
+  const telefone = (dados.telefone || "").trim();
+  const email = (dados.email || "").trim().toLowerCase();
+  const lembreteEmail = Boolean(dados.lembreteEmail);
+  const servico = (dados.servico || "").trim();
+  const preco = (dados.preco || "").trim();
+  const barbeiro = (dados.barbeiro || "").trim();
+  const data = (dados.data || "").trim();
+  const hora = (dados.hora || "").trim();
+
+  if (nome.length < 2 || nome.length > 60) {
+    throw new HttpsError("invalid-argument", "Nome inválido.");
+  }
+
+  if (!validarTelefone(telefone)) {
+    throw new HttpsError("invalid-argument", "Telefone inválido.");
+  }
+
+  if (lembreteEmail && !validarEmail(email)) {
+    throw new HttpsError("invalid-argument", "Informe um e-mail válido para receber lembrete.");
+  }
+
+  if (!BARBEIROS_VALIDOS.includes(barbeiro)) {
+    throw new HttpsError("invalid-argument", "Barbeiro inválido.");
+  }
+
+  if (!validarData(data)) {
+    throw new HttpsError("invalid-argument", "Data inválida.");
+  }
+
+  if (diaFechado(data)) {
+    throw new HttpsError("failed-precondition", "Não atendemos aos domingos.");
+  }
+
+  if (!HORARIOS_VALIDOS.includes(hora)) {
+    throw new HttpsError("invalid-argument", "Horário inválido.");
+  }
+
+  if (!SERVICOS[servico]) {
+    throw new HttpsError("invalid-argument", "Serviço inválido.");
+  }
+
+  if (SERVICOS[servico].preco !== preco) {
+    throw new HttpsError("invalid-argument", "Preço inválido.");
+  }
+
+  if (SERVICOS[servico].barbeiroFixo && SERVICOS[servico].barbeiroFixo !== barbeiro) {
+    throw new HttpsError("invalid-argument", `Este serviço deve ser com ${SERVICOS[servico].barbeiroFixo}.`);
+  }
+
+  const dataHoraAgendamento = criarDataHoraMS(data, hora);
+  const agora = new Date();
+
+  if (dataHoraAgendamento <= agora) {
+    throw new HttpsError("failed-precondition", "Não é possível agendar um horário que já passou.");
+  }
+
+  const duracao = SERVICOS[servico].duracao;
+  const slots = calcularSlots(data, hora, duracao);
+  const agendamentoRef = db.collection("agendamentos").doc();
+
+  await db.runTransaction(async (transaction) => {
+    for (const horaSlot of slots) {
+      const horarioRef = db.collection("horarios_ocupados").doc(gerarHorarioId(barbeiro, data, horaSlot));
+      const horarioDoc = await transaction.get(horarioRef);
+
+      if (horarioDoc.exists) {
+        throw new HttpsError("already-exists", "Esse horário não está mais disponível.");
+      }
+    }
+
+    transaction.set(agendamentoRef, {
+      nome,
+      telefone,
+      email: email || "",
+      lembreteEmail,
+      servico,
+      preco,
+      duracao,
+      barbeiro,
+      data,
+      hora,
+      slots,
+      criadoEm: admin.firestore.FieldValue.serverTimestamp(),
+      lembrete30Enviado: false,
+      status: "pendente"
+    });
+
+    slots.forEach((horaSlot, index) => {
+      const horarioRef = db.collection("horarios_ocupados").doc(gerarHorarioId(barbeiro, data, horaSlot));
+      transaction.set(horarioRef, {
+        barbeiro,
+        data,
+        hora: horaSlot,
+        slotIndex: index,
+        agendamentoId: agendamentoRef.id,
+        servico,
+        criadoEm: admin.firestore.FieldValue.serverTimestamp()
+      });
+    });
+  });
+
+  return {
+    ok: true,
+    id: agendamentoRef.id
+  };
 });
 
-function renderizarHorarios(barbeiro, data, ocupados) {
-    const horariosDiv = document.getElementById("horarios");
-    if (!horariosDiv) return;
+exports.enviarEmailNovoAgendamento = onDocumentCreated(
+  {
+    document: "agendamentos/{id}",
+    secrets: [RESEND_API_KEY],
+  },
+  async (event) => {
+    const dados = event.data.data();
+    const resend = new Resend(RESEND_API_KEY.value());
 
-    horariosDiv.innerHTML = "";
-
-    if (diaFechado(data)) {
-        horariosDiv.innerHTML = `<p class="horarios-vazio">Fechado neste dia.</p>`;
-        return;
-    }
-
-    HORARIOS_VALIDOS.forEach(hora => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.innerText = hora;
-        btn.classList.add("horario-btn");
-
-        const ocupado = ocupados.includes(hora);
-        const passado = horarioJaPassou(data, hora);
-
-        if (ocupado || passado) {
-            btn.disabled = true;
-            btn.classList.add("horario-ocupado");
-        } else {
-            btn.onclick = () => {
-                agendamento.hora = hora;
-
-                document.querySelectorAll(".horario-btn").forEach(b => {
-                    b.classList.remove("horario-selecionado");
-                });
-
-                btn.classList.add("horario-selecionado");
-
-                document.getElementById('btnConfirmarAgendamento')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            };
-        }
-
-        horariosDiv.appendChild(btn);
+    await resend.emails.send({
+      from: EMAIL_FROM,
+      to: [EMAIL_DESTINO],
+      subject: "Novo agendamento 💈",
+      html: `
+        <h2>Novo agendamento</h2>
+        <p><strong>Cliente:</strong> ${dados.nome || "-"}</p>
+        <p><strong>Telefone:</strong> ${dados.telefone || "-"}</p>
+        <p><strong>E-mail:</strong> ${dados.email || "-"}</p>
+        <p><strong>Serviço:</strong> ${dados.servico || "-"}</p>
+        <p><strong>Duração:</strong> ${dados.duracao || "-"} min</p>
+        <p><strong>Barbeiro:</strong> ${dados.barbeiro || "-"}</p>
+        <p><strong>Data:</strong> ${dados.data || "-"}</p>
+        <p><strong>Hora:</strong> ${dados.hora || "-"}</p>
+      `,
     });
-}
 
-function escutarHorarios(barbeiro, data) {
-    if (!window.db || !window.collection || !window.onSnapshot) return;
+    console.log("Email do admin enviado 🔥");
+  }
+);
 
-    if (unsubscribeHorarios) {
-        unsubscribeHorarios();
-        unsubscribeHorarios = null;
-    }
+exports.lembrete30min = onSchedule(
+  {
+    schedule: "every 5 minutes",
+    timeZone: "America/Campo_Grande",
+    secrets: [RESEND_API_KEY],
+  },
+  async () => {
+    const resend = new Resend(RESEND_API_KEY.value());
 
-    const horariosRef = window.collection(window.db, "horarios_ocupados");
+    const agora = new Date();
+    const inicio = new Date(agora.getTime() + 29 * 60000);
+    const fim = new Date(agora.getTime() + 31 * 60000);
 
-    unsubscribeHorarios = window.onSnapshot(horariosRef, (snapshot) => {
-        const ocupados = [];
+    const snapshot = await db.collection("agendamentos").get();
 
-        snapshot.forEach((docSnap) => {
-            const d = docSnap.data();
-            if (d.barbeiro === barbeiro && d.data === data) {
-                ocupados.push(d.hora);
-            }
+    for (const docSnap of snapshot.docs) {
+      const d = docSnap.data();
+
+      if (d.lembrete30Enviado) continue;
+      if (d.status === "cancelado" || d.status === "concluido") continue;
+      if (!d.lembreteEmail) continue;
+      if (!d.email || !validarEmail(d.email)) continue;
+      if (!d.data || !d.hora) continue;
+
+      const dataHora = criarDataHoraMS(d.data, d.hora);
+
+      if (dataHora >= inicio && dataHora <= fim) {
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: [d.email],
+          subject: "Seu agendamento é em 30 minutos 💈",
+          html: `
+            <h2>Seu horário está chegando</h2>
+            <p><strong>Cliente:</strong> ${d.nome || "-"}</p>
+            <p><strong>Serviço:</strong> ${d.servico || "-"}</p>
+            <p><strong>Barbeiro:</strong> ${d.barbeiro || "-"}</p>
+            <p><strong>Data:</strong> ${d.data || "-"}</p>
+            <p><strong>Hora:</strong> ${d.hora || "-"}</p>
+            <p>Te esperamos em 30 minutos 💈</p>
+          `,
         });
 
-        renderizarHorarios(barbeiro, data, ocupados);
-    }, () => {
-        const horariosDiv = document.getElementById("horarios");
-        if (horariosDiv) {
-            horariosDiv.innerHTML = `<p class="horarios-vazio">Erro ao carregar horários.</p>`;
-        }
-    });
-}
-
-const btnConfirmar = document.getElementById('btnConfirmarAgendamento');
-
-btnConfirmar?.addEventListener('click', async () => {
-    const nomeCliente = document.getElementById('nomeCliente')?.value.trim() || "";
-    const telefoneCliente = document.getElementById('telefoneCliente')?.value.trim() || "";
-    const emailCliente = document.getElementById('emailCliente')?.value.trim() || "";
-    const lembrarEmail = document.getElementById('lembrarEmail')?.checked || false;
-
-    if (!nomeCliente || !telefoneCliente || !agendamento.servico || !agendamento.barbeiro || !agendamento.data || !agendamento.hora) {
-        alert("Preencha tudo.");
-        return;
-    }
-
-    if (lembrarEmail && !emailCliente) {
-        alert("Informe o e-mail.");
-        return;
-    }
-
-    if (horarioJaPassou(agendamento.data, agendamento.hora)) {
-        alert("Esse horário já passou.");
-        return;
-    }
-
-    try {
-        btnConfirmar.disabled = true;
-        btnConfirmar.textContent = "Confirmando...";
-
-        const criarAgendamento = window.httpsCallable(window.functions, "criarAgendamento");
-
-        await criarAgendamento({
-            nome: nomeCliente,
-            telefone: telefoneCliente,
-            email: emailCliente,
-            lembreteEmail: lembrarEmail,
-            servico: agendamento.servico,
-            preco: agendamento.preco,
-            barbeiro: agendamento.barbeiro,
-            data: agendamento.data,
-            hora: agendamento.hora
+        await docSnap.ref.update({
+          lembrete30Enviado: true,
         });
 
-        if ("vibrate" in navigator) {
-            navigator.vibrate([120, 50, 120]);
-        }
-
-        const mensagemWhatsApp = `Olá! Acabei de agendar meu horário 💈
-
-Nome: ${nomeCliente}
-Serviço: ${agendamento.servico}
-Barbeiro: ${agendamento.barbeiro}
-Data: ${agendamento.data}
-Hora: ${agendamento.hora}`;
-
-        abrirModalSucesso(mensagemWhatsApp, {
-            servico: agendamento.servico,
-            barbeiro: agendamento.barbeiro,
-            data: agendamento.data,
-            hora: agendamento.hora
-        });
-
-        document.getElementById('nomeCliente').value = "";
-        document.getElementById('telefoneCliente').value = "";
-        document.getElementById('emailCliente').value = "";
-        document.getElementById('lembrarEmail').checked = true;
-        document.getElementById('data').value = "";
-        document.getElementById('horarios').innerHTML = "";
-
-        document.querySelectorAll('.card-profissional').forEach((cardItem) => {
-            cardItem.classList.remove('selecionado');
-        });
-
-        agendamento = {
-            servico: "",
-            preco: "",
-            barbeiro: "",
-            data: "",
-            hora: ""
-        };
-
-        if (unsubscribeHorarios) {
-            unsubscribeHorarios();
-            unsubscribeHorarios = null;
-        }
-
-    } catch (e) {
-        alert(e.message || "Erro ao agendar.");
+        console.log(`Lembrete enviado para ${d.email} 🔥`);
+      }
     }
-
-    btnConfirmar.disabled = false;
-    btnConfirmar.textContent = "Confirmar Agendamento";
-});
-
-function abrirModalSucesso(mensagemWhatsApp, dadosResumo) {
-    const modal = document.getElementById("modalSucesso");
-    const btnFechar = document.getElementById("fecharModalSucesso");
-    const btnWhats = document.getElementById("abrirWhatsModal");
-    const modalInfo = document.getElementById("modalInfoAgendamento");
-
-    if (!modal || !btnFechar || !btnWhats || !modalInfo) return;
-
-    modalInfo.innerHTML = `
-        <div><b>Serviço:</b> ${dadosResumo.servico}</div>
-        <div><b>Barbeiro:</b> ${dadosResumo.barbeiro}</div>
-        <div><b>Data:</b> ${dadosResumo.data}</div>
-        <div><b>Hora:</b> ${dadosResumo.hora}</div>
-    `;
-
-    modal.classList.add("ativo");
-    document.body.style.overflow = "hidden";
-
-    btnFechar.onclick = () => {
-        modal.classList.remove("ativo");
-        document.body.style.overflow = "";
-    };
-
-    btnWhats.onclick = () => {
-        window.open(
-            `https://wa.me/${WHATSAPP_BARBEARIA}?text=${encodeURIComponent(mensagemWhatsApp)}`,
-            "_blank"
-        );
-        modal.classList.remove("ativo");
-        document.body.style.overflow = "";
-    };
-
-    modal.onclick = (e) => {
-        if (e.target === modal) {
-            modal.classList.remove("ativo");
-            document.body.style.overflow = "";
-        }
-    };
-}
-
-function abrirMenu() {
-    const menuLateral = document.getElementById("menuLateral");
-    if (menuLateral) menuLateral.classList.add("aberto");
-}
-
-function fecharMenu() {
-    const menuLateral = document.getElementById("menuLateral");
-    if (menuLateral) menuLateral.classList.remove("aberto");
-}
-
-window.abrirMenu = abrirMenu;
-window.fecharMenu = fecharMenu;
-
-document.querySelectorAll('.menu-lateral a').forEach((link) => {
-    link.addEventListener('click', () => {
-        fecharMenu();
-    });
-});
-
-if (typeof flatpickr !== "undefined") {
-    flatpickr("#data", {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        locale: "pt",
-        disableMobile: true,
-        monthSelectorType: "dropdown"
-    });
-}
+  }
+);

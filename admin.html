@@ -1,371 +1,496 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+const imagens = document.querySelectorAll('.imagem');
+const botoes = document.querySelectorAll('.botao');
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Painel do Barbeiro</title>
-    <link rel="stylesheet" href="./CSS/admin.css" />
-</head>
+let indexAtual = 0;
+let intervalo;
+let unsubscribeHorarios = null;
 
-<body>
+const TIMEZONE_OFFSET = "-04:00";
 
-    <main class="admin-page">
-        <section class="admin-box">
-            <div class="admin-header">
-                <h1>Painel do Barbeiro</h1>
-                <p>Barbearia Lado a Lado</p>
-            </div>
+const SERVICOS = {
+    "Corte": { preco: "50,00", duracao: 30 },
+    "Barba": { preco: "40,00", duracao: 30 },
+    "Acabamento e barba": { preco: "50,00", duracao: 30 },
+    "Alisamento capilar": { preco: "90,00", duracao: 90 },
+    "Barba (com Matheus)": { preco: "45,00", duracao: 30, barbeiroFixo: "Matheus" },
+    "Cabelo + barba + sobrancelha (com Matheus)": { preco: "100,00", duracao: 60, barbeiroFixo: "Matheus" },
+    "Cabelo + sobrancelha - navalha": { preco: "55,00", duracao: 30 },
+    "Corte + barba + sobrancelha": { preco: "90,00", duracao: 60 },
+    "Corte e barba (com Matheus)": { preco: "90,00", duracao: 60, barbeiroFixo: "Matheus" },
+    "Corte e cavanhaque": { preco: "60,00", duracao: 30 },
+    "Corte e hidratação": { preco: "85,00", duracao: 30 },
+    "Corte e sobrancelha (com Matheus)": { preco: "60,00", duracao: 30, barbeiroFixo: "Matheus" },
+    "Corte sobrancelha e cavanhaque": { preco: "70,00", duracao: 30 },
+    "Limpeza de pele": { preco: "60,00", duracao: 30 },
+    "Luzes": { preco: "150,00", duracao: 30 },
+    "Nevou": { preco: "170,00", duracao: 120 },
+    "Pezinho": { preco: "20,00", duracao: 30 },
+    "Pigmentação": { preco: "40,00", duracao: 30 },
+    "Pigmentação + corte": { preco: "85,00", duracao: 60 },
+    "Restauração capilar": { preco: "45,00", duracao: 30 },
+    "Selagem": { preco: "120,00", duracao: 60 }
+};
 
-            <div class="login-area" id="loginArea" style="display: none;">
-                <button id="loginBtn" class="btn-principal">Entrar com Google</button>
-            </div>
+const HORARIOS_VALIDOS = [
+    "08:00", "08:30", "09:00", "09:30",
+    "10:00", "10:30", "11:00", "11:30",
+    "13:00", "13:30", "14:00", "14:30",
+    "15:00", "15:30", "16:00", "16:30",
+    "17:00", "17:30", "18:00"
+];
 
-            <div id="painel" class="painel" style="display: none;">
-                <div class="painel-topo">
-                    <h2>Agendamentos</h2>
+const WHATSAPP_BARBEARIA = "556799995999";
 
-                    <div class="topo-acoes">
-                        <div class="filtros">
-                            <button class="btn-filtro ativo" data-filtro="todos">Todos</button>
-                            <button class="btn-filtro" data-filtro="pendente">Pendentes</button>
-                            <button class="btn-filtro" data-filtro="concluido">Concluídos</button>
-                            <button class="btn-filtro" data-filtro="cancelado">Cancelados</button>
-                            <button class="btn-filtro" data-filtro="hoje">Hoje</button>
-                            <button class="btn-filtro" data-filtro="proximos">Próximos</button>
-                        </div>
+let agendamento = {
+    servico: "",
+    preco: "",
+    barbeiro: "",
+    data: "",
+    hora: ""
+};
 
-                        <button id="logoutBtn" class="btn-logout">Sair</button>
-                    </div>
-                </div>
+function mudarSlide(index) {
+    botoes.forEach((btn) => btn.classList.remove('selecionado'));
+    imagens.forEach((img) => img.classList.remove('ativa'));
 
-                <div id="lista" class="lista-agendamentos"></div>
-            </div>
-        </section>
-    </main>
+    if (imagens[index] && botoes[index]) {
+        imagens[index].classList.add('ativa');
+        botoes[index].classList.add('selecionado');
+        indexAtual = index;
+    }
+}
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import {
-            getFirestore,
-            collection,
-            doc,
-            updateDoc,
-            deleteDoc,
-            getDoc,
-            setDoc,
-            getDocs,
-            query,
-            where,
-            onSnapshot
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import {
-            getAuth,
-            signInWithPopup,
-            GoogleAuthProvider,
-            signOut,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+function proximoSlide() {
+    const proximo = (indexAtual + 1) % imagens.length;
+    mudarSlide(proximo);
+}
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDNWWG7nPI7EXyuMlJmiHbeHAX6EXABWqQ",
-            authDomain: "barbearia-lado-a-lado.firebaseapp.com",
-            projectId: "barbearia-lado-a-lado",
-            storageBucket: "barbearia-lado-a-lado.firebasestorage.app",
-            messagingSenderId: "477542764196",
-            appId: "1:477542764196:web:691facb65d22e2f214a031"
+function iniciarAutoplay() {
+    clearInterval(intervalo);
+    intervalo = setInterval(proximoSlide, 4000);
+}
+
+if (imagens.length > 0 && imagens.length === botoes.length) {
+    botoes.forEach((botao, i) => {
+        botao.addEventListener('click', () => {
+            mudarSlide(i);
+            iniciarAutoplay();
+        });
+    });
+
+    iniciarAutoplay();
+}
+
+document.querySelectorAll('.btn-categoria').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const listaAtual = btn.nextElementSibling;
+        if (!listaAtual) return;
+
+        const todasListas = document.querySelectorAll('.servicos-lista');
+        todasListas.forEach((lista) => {
+            if (lista !== listaAtual) lista.style.display = 'none';
+        });
+
+        listaAtual.style.display = listaAtual.style.display === 'block' ? 'none' : 'block';
+    });
+});
+
+document.querySelectorAll('.item-servico').forEach((item) => {
+    const btn = item.querySelector('.btn-selecionar');
+
+    btn?.addEventListener('click', () => {
+        agendamento.servico = item.dataset.nome || "";
+        agendamento.preco = item.dataset.preco || "";
+        agendamento.barbeiro = "";
+        agendamento.data = "";
+        agendamento.hora = "";
+
+        const passoProfissionais = document.getElementById('passo-profissionais');
+        const formAgendamento = document.getElementById('formAgendamento');
+        const horariosDiv = document.getElementById('horarios');
+
+        if (passoProfissionais) {
+            passoProfissionais.classList.add('ativo');
+            passoProfissionais.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (formAgendamento) formAgendamento.style.display = 'none';
+        if (horariosDiv) horariosDiv.innerHTML = "";
+
+        document.querySelectorAll('.card-profissional').forEach((card) => {
+            card.classList.remove('selecionado');
+        });
+
+        if (unsubscribeHorarios) {
+            unsubscribeHorarios();
+            unsubscribeHorarios = null;
+        }
+    });
+});
+
+const btnVoltar = document.querySelector('.btn-voltar');
+btnVoltar?.addEventListener('click', () => {
+    const passoServicos = document.getElementById('passo-servicos');
+    const passoProfissionais = document.getElementById('passo-profissionais');
+    const formAgendamento = document.getElementById('formAgendamento');
+
+    if (passoProfissionais) passoProfissionais.classList.remove('ativo');
+
+    if (passoServicos) {
+        passoServicos.classList.add('ativo');
+        passoServicos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    if (formAgendamento) formAgendamento.style.display = 'none';
+
+    if (unsubscribeHorarios) {
+        unsubscribeHorarios();
+        unsubscribeHorarios = null;
+    }
+});
+
+document.querySelectorAll('.btn-escolher-barbeiro').forEach((btn) => {
+    btn.addEventListener('click', function () {
+        const card = this.parentElement;
+        if (!card) return;
+
+        const barbeiroEscolhido = card.dataset.barbeiro || "";
+
+        if (SERVICOS[agendamento.servico]?.barbeiroFixo &&
+            SERVICOS[agendamento.servico].barbeiroFixo !== barbeiroEscolhido) {
+            alert(`Esse serviço deve ser com ${SERVICOS[agendamento.servico].barbeiroFixo}.`);
+            return;
+        }
+
+        agendamento.barbeiro = barbeiroEscolhido;
+        agendamento.data = "";
+        agendamento.hora = "";
+
+        document.querySelectorAll('.card-profissional').forEach((cardItem) => {
+            cardItem.classList.remove('selecionado');
+        });
+
+        card.classList.add('selecionado');
+
+        const formAgendamento = document.getElementById('formAgendamento');
+        const horariosDiv = document.getElementById('horarios');
+        const inputData = document.getElementById('data');
+
+        if (formAgendamento) {
+            formAgendamento.style.display = 'block';
+
+            setTimeout(() => {
+                formAgendamento.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+        }
+
+        if (horariosDiv) horariosDiv.innerHTML = "";
+        if (inputData) inputData.value = "";
+
+        if (unsubscribeHorarios) {
+            unsubscribeHorarios();
+            unsubscribeHorarios = null;
+        }
+    });
+});
+
+function criarDataHoraMS(data, hora) {
+    return new Date(`${data}T${hora}:00${TIMEZONE_OFFSET}`);
+}
+
+function adicionarMinutos(dataHora, minutos) {
+    return new Date(dataHora.getTime() + minutos * 60000);
+}
+
+function formatarHoraLocal(dataHora) {
+    const h = String(dataHora.getUTCHours()).padStart(2, "0");
+    const m = String(dataHora.getUTCMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+}
+
+function diaFechado(data) {
+    const d = new Date(`${data}T00:00:00${TIMEZONE_OFFSET}`);
+    return d.getUTCDay() === 0;
+}
+
+function calcularSlotsServico(data, horaInicial, duracao) {
+    const quantidade = Math.ceil(duracao / 30);
+    const inicio = criarDataHoraMS(data, horaInicial);
+    const slots = [];
+
+    for (let i = 0; i < quantidade; i++) {
+        const atual = adicionarMinutos(inicio, i * 30);
+        const horaSlot = formatarHoraLocal(atual);
+
+        if (!HORARIOS_VALIDOS.includes(horaSlot)) {
+            return null;
+        }
+
+        slots.push(horaSlot);
+    }
+
+    return slots;
+}
+
+function horarioJaPassou(data, hora) {
+    const agora = new Date();
+    const dataHora = criarDataHoraMS(data, hora);
+    return dataHora <= agora;
+}
+
+document.getElementById("data")?.addEventListener("change", (e) => {
+    agendamento.data = e.target.value;
+    agendamento.hora = "";
+
+    if (!agendamento.barbeiro || !agendamento.data) return;
+
+    if (diaFechado(agendamento.data)) {
+        const horariosDiv = document.getElementById("horarios");
+        if (horariosDiv) horariosDiv.innerHTML = `<p class="horarios-vazio">Fechado neste dia.</p>`;
+        return;
+    }
+
+    escutarHorarios(agendamento.barbeiro, agendamento.data);
+});
+
+function renderizarHorarios(barbeiro, data, ocupados) {
+    const horariosDiv = document.getElementById("horarios");
+    if (!horariosDiv) return;
+
+    horariosDiv.innerHTML = "";
+
+    if (diaFechado(data)) {
+        horariosDiv.innerHTML = `<p class="horarios-vazio">Fechado neste dia.</p>`;
+        return;
+    }
+
+    const duracao = SERVICOS[agendamento.servico]?.duracao || 30;
+
+    HORARIOS_VALIDOS.forEach(hora => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerText = hora;
+        btn.classList.add("horario-btn");
+
+        const slotsNecessarios = calcularSlotsServico(data, hora, duracao);
+        const passado = horarioJaPassou(data, hora);
+
+        let ocupado = false;
+
+        if (!slotsNecessarios) {
+            ocupado = true;
+        } else {
+            ocupado = slotsNecessarios.some(slot => ocupados.includes(slot) || horarioJaPassou(data, slot));
+        }
+
+        if (ocupado || passado) {
+            btn.disabled = true;
+            btn.classList.add("horario-ocupado");
+        } else {
+            btn.onclick = () => {
+                agendamento.hora = hora;
+
+                document.querySelectorAll(".horario-btn").forEach(b => {
+                    b.classList.remove("horario-selecionado");
+                });
+
+                btn.classList.add("horario-selecionado");
+
+                document.getElementById('btnConfirmarAgendamento')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            };
+        }
+
+        horariosDiv.appendChild(btn);
+    });
+}
+
+function escutarHorarios(barbeiro, data) {
+    if (!window.db || !window.collection || !window.onSnapshot) return;
+
+    if (unsubscribeHorarios) {
+        unsubscribeHorarios();
+        unsubscribeHorarios = null;
+    }
+
+    const horariosRef = window.collection(window.db, "horarios_ocupados");
+
+    unsubscribeHorarios = window.onSnapshot(horariosRef, (snapshot) => {
+        const ocupados = [];
+
+        snapshot.forEach((docSnap) => {
+            const d = docSnap.data();
+            if (d.barbeiro === barbeiro && d.data === data) {
+                ocupados.push(d.hora);
+            }
+        });
+
+        renderizarHorarios(barbeiro, data, ocupados);
+    }, () => {
+        const horariosDiv = document.getElementById("horarios");
+        if (horariosDiv) {
+            horariosDiv.innerHTML = `<p class="horarios-vazio">Erro ao carregar horários.</p>`;
+        }
+    });
+}
+
+const btnConfirmar = document.getElementById('btnConfirmarAgendamento');
+
+btnConfirmar?.addEventListener('click', async () => {
+    const nomeCliente = document.getElementById('nomeCliente')?.value.trim() || "";
+    const telefoneCliente = document.getElementById('telefoneCliente')?.value.trim() || "";
+    const emailCliente = document.getElementById('emailCliente')?.value.trim() || "";
+    const lembrarEmail = document.getElementById('lembrarEmail')?.checked || false;
+
+    if (!nomeCliente || !telefoneCliente || !agendamento.servico || !agendamento.barbeiro || !agendamento.data || !agendamento.hora) {
+        alert("Preencha tudo.");
+        return;
+    }
+
+    if (lembrarEmail && !emailCliente) {
+        alert("Informe o e-mail.");
+        return;
+    }
+
+    if (horarioJaPassou(agendamento.data, agendamento.hora)) {
+        alert("Esse horário já passou.");
+        return;
+    }
+
+    try {
+        btnConfirmar.disabled = true;
+        btnConfirmar.textContent = "Confirmando...";
+
+        const criarAgendamento = window.httpsCallable(window.functions, "criarAgendamento");
+
+        await criarAgendamento({
+            nome: nomeCliente,
+            telefone: telefoneCliente,
+            email: emailCliente,
+            lembreteEmail: lembrarEmail,
+            servico: agendamento.servico,
+            preco: agendamento.preco,
+            barbeiro: agendamento.barbeiro,
+            data: agendamento.data,
+            hora: agendamento.hora
+        });
+
+        if ("vibrate" in navigator) {
+            navigator.vibrate([120, 50, 120]);
+        }
+
+        const mensagemWhatsApp = `Olá! Acabei de agendar meu horário 💈
+
+Nome: ${nomeCliente}
+Serviço: ${agendamento.servico}
+Barbeiro: ${agendamento.barbeiro}
+Data: ${agendamento.data}
+Hora: ${agendamento.hora}`;
+
+        abrirModalSucesso(mensagemWhatsApp, {
+            servico: agendamento.servico,
+            barbeiro: agendamento.barbeiro,
+            data: agendamento.data,
+            hora: agendamento.hora
+        });
+
+        document.getElementById('nomeCliente').value = "";
+        document.getElementById('telefoneCliente').value = "";
+        document.getElementById('emailCliente').value = "";
+        document.getElementById('lembrarEmail').checked = true;
+        document.getElementById('data').value = "";
+        document.getElementById('horarios').innerHTML = "";
+
+        document.querySelectorAll('.card-profissional').forEach((cardItem) => {
+            cardItem.classList.remove('selecionado');
+        });
+
+        agendamento = {
+            servico: "",
+            preco: "",
+            barbeiro: "",
+            data: "",
+            hora: ""
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        const EMAIL_AUTORIZADO = "miglegame@gmail.com";
-
-        const loginBtn = document.getElementById("loginBtn");
-        const loginArea = document.getElementById("loginArea");
-        const painel = document.getElementById("painel");
-        const lista = document.getElementById("lista");
-        const logoutBtn = document.getElementById("logoutBtn");
-        const botoesFiltro = document.querySelectorAll(".btn-filtro");
-
-        let agendamentosGlobal = [];
-        let filtroAtual = "todos";
-        let unsubscribeAgendamentos = null;
-
-        function gerarHorarioId(barbeiro, data, hora) {
-            return `${barbeiro}_${data}_${hora}`.replace(/[^\w-]/g, "_");
+        if (unsubscribeHorarios) {
+            unsubscribeHorarios();
+            unsubscribeHorarios = null;
         }
 
-        async function removerHorarioOcupado(dados, agendamentoId) {
-            const horariosRef = collection(db, "horarios_ocupados");
+    } catch (e) {
+        alert(e.message || "Erro ao agendar.");
+    }
 
-            const horarioId = gerarHorarioId(dados.barbeiro, dados.data, dados.hora);
-            const horarioRef = doc(db, "horarios_ocupados", horarioId);
+    btnConfirmar.disabled = false;
+    btnConfirmar.textContent = "Confirmar Agendamento";
+});
 
-            try {
-                const snap = await getDoc(horarioRef);
-                if (snap.exists()) {
-                    await deleteDoc(horarioRef);
-                }
-            } catch (erro) {
-                console.warn("Falha ao remover por ID direto:", erro);
-            }
+function abrirModalSucesso(mensagemWhatsApp, dadosResumo) {
+    const modal = document.getElementById("modalSucesso");
+    const btnFechar = document.getElementById("fecharModalSucesso");
+    const btnWhats = document.getElementById("abrirWhatsModal");
+    const modalInfo = document.getElementById("modalInfoAgendamento");
 
-            try {
-                const qAgendamentoId = query(horariosRef, where("agendamentoId", "==", agendamentoId));
-                const snapAgendamentoId = await getDocs(qAgendamentoId);
+    if (!modal || !btnFechar || !btnWhats || !modalInfo) return;
 
-                for (const item of snapAgendamentoId.docs) {
-                    await deleteDoc(doc(db, "horarios_ocupados", item.id));
-                }
-            } catch (erro) {
-                console.warn("Falha ao remover por agendamentoId:", erro);
-            }
+    modalInfo.innerHTML = `
+        <div><b>Serviço:</b> ${dadosResumo.servico}</div>
+        <div><b>Barbeiro:</b> ${dadosResumo.barbeiro}</div>
+        <div><b>Data:</b> ${dadosResumo.data}</div>
+        <div><b>Hora:</b> ${dadosResumo.hora}</div>
+    `;
 
-            try {
-                const qCampos = query(
-                    horariosRef,
-                    where("barbeiro", "==", dados.barbeiro),
-                    where("data", "==", dados.data),
-                    where("hora", "==", dados.hora)
-                );
+    modal.classList.add("ativo");
+    document.body.style.overflow = "hidden";
 
-                const snapCampos = await getDocs(qCampos);
+    btnFechar.onclick = () => {
+        modal.classList.remove("ativo");
+        document.body.style.overflow = "";
+    };
 
-                for (const item of snapCampos.docs) {
-                    await deleteDoc(doc(db, "horarios_ocupados", item.id));
-                }
-            } catch (erro) {
-                console.warn("Falha ao remover por campos:", erro);
-            }
+    btnWhats.onclick = () => {
+        window.open(
+            `https://wa.me/${WHATSAPP_BARBEARIA}?text=${encodeURIComponent(mensagemWhatsApp)}`,
+            "_blank"
+        );
+        modal.classList.remove("ativo");
+        document.body.style.overflow = "";
+    };
+
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.classList.remove("ativo");
+            document.body.style.overflow = "";
         }
+    };
+}
 
-        async function recriarHorarioOcupado(dados, agendamentoId) {
-            const horarioId = gerarHorarioId(dados.barbeiro, dados.data, dados.hora);
-            const horarioRef = doc(db, "horarios_ocupados", horarioId);
+function abrirMenu() {
+    const menuLateral = document.getElementById("menuLateral");
+    if (menuLateral) menuLateral.classList.add("aberto");
+}
 
-            const horarioSnap = await getDoc(horarioRef);
+function fecharMenu() {
+    const menuLateral = document.getElementById("menuLateral");
+    if (menuLateral) menuLateral.classList.remove("aberto");
+}
 
-            if (!horarioSnap.exists()) {
-                await setDoc(horarioRef, {
-                    barbeiro: dados.barbeiro,
-                    data: dados.data,
-                    hora: dados.hora,
-                    agendamentoId: agendamentoId
-                });
-            }
-        }
+window.abrirMenu = abrirMenu;
+window.fecharMenu = fecharMenu;
 
-        function renderizarAgendamentos() {
-            lista.innerHTML = "";
+document.querySelectorAll('.menu-lateral a').forEach((link) => {
+    link.addEventListener('click', () => {
+        fecharMenu();
+    });
+});
 
-            let agendamentosFiltrados = [...agendamentosGlobal];
-            const hoje = new Date().toISOString().slice(0, 10);
-            const agora = new Date();
-
-            if (filtroAtual === "pendente") {
-                agendamentosFiltrados = agendamentosFiltrados.filter(item => item.status === "pendente");
-            } else if (filtroAtual === "concluido") {
-                agendamentosFiltrados = agendamentosFiltrados.filter(item => item.status === "concluido");
-            } else if (filtroAtual === "cancelado") {
-                agendamentosFiltrados = agendamentosFiltrados.filter(item => item.status === "cancelado");
-            } else if (filtroAtual === "hoje") {
-                agendamentosFiltrados = agendamentosFiltrados.filter(item => item.data === hoje);
-            } else if (filtroAtual === "proximos") {
-                agendamentosFiltrados = agendamentosFiltrados.filter(item => {
-                    const dataHora = new Date(`${item.data}T${item.hora || "00:00"}-04:00`);
-                    return dataHora >= agora && item.status !== "cancelado";
-                });
-            }
-
-            if (agendamentosFiltrados.length === 0) {
-                lista.innerHTML = `<p class="mensagem">Nenhum agendamento encontrado.</p>`;
-                return;
-            }
-
-            agendamentosFiltrados.forEach((dados) => {
-                const card = document.createElement("div");
-                card.className = "card-agendamento";
-
-                let classeStatus = "status-pendente";
-                if (dados.status === "concluido") classeStatus = "status-concluido";
-                if (dados.status === "cancelado") classeStatus = "status-cancelado";
-
-                card.innerHTML = `
-                    <div class="card-topo">
-                        <h3>${dados.nome}</h3>
-                        <span class="status ${classeStatus}">${dados.status}</span>
-                    </div>
-
-                    <div class="card-info">
-                        <p><strong>Telefone:</strong> <a class="telefone-link" href="https://wa.me/55${String(dados.telefone).replace(/\D/g, "")}" target="_blank">${dados.telefone}</a></p>
-                        <p><strong>E-mail:</strong> ${dados.email || "-"}</p>
-                        <p><strong>Serviço:</strong> ${dados.servico}</p>
-                        <p><strong>Preço:</strong> R$ ${dados.preco}</p>
-                        <p><strong>Barbeiro:</strong> ${dados.barbeiro}</p>
-                        <p><strong>Data:</strong> ${dados.data}</p>
-                        <p><strong>Hora:</strong> ${dados.hora}</p>
-                    </div>
-
-                    <div class="card-acoes">
-                        <button class="btn-acao btn-confirmar" data-id="${dados.id}" data-status="pendente">Pendente</button>
-                        <button class="btn-acao btn-concluir" data-id="${dados.id}" data-status="concluido">Concluir</button>
-                        <button class="btn-acao btn-cancelar" data-id="${dados.id}" data-status="cancelado">Cancelar</button>
-                        <button class="btn-excluir" data-id="${dados.id}">Excluir</button>
-                    </div>
-                `;
-
-                lista.appendChild(card);
-            });
-
-            document.querySelectorAll(".btn-acao").forEach((botao) => {
-                botao.addEventListener("click", async () => {
-                    const id = botao.getAttribute("data-id");
-                    const novoStatus = botao.getAttribute("data-status");
-                    await atualizarStatus(id, novoStatus);
-                });
-            });
-
-            document.querySelectorAll(".btn-excluir").forEach((botao) => {
-                botao.addEventListener("click", async () => {
-                    const id = botao.getAttribute("data-id");
-                    const confirmar = confirm("Tem certeza que deseja excluir este agendamento?");
-                    if (!confirmar) return;
-
-                    try {
-                        const dados = agendamentosGlobal.find(item => item.id === id);
-                        if (dados) {
-                            await removerHorarioOcupado(dados, id);
-                        }
-
-                        await deleteDoc(doc(db, "agendamentos", id));
-                        alert("Agendamento excluído com sucesso.");
-                    } catch (erro) {
-                        console.error("Erro ao excluir agendamento:", erro);
-                        alert("Erro ao excluir agendamento.");
-                    }
-                });
-            });
-        }
-
-        async function atualizarStatus(id, novoStatus) {
-            try {
-                const dados = agendamentosGlobal.find(item => item.id === id);
-                if (!dados) {
-                    alert("Agendamento não encontrado.");
-                    return;
-                }
-
-                const ref = doc(db, "agendamentos", id);
-
-                await updateDoc(ref, {
-                    status: novoStatus
-                });
-
-                if (novoStatus === "cancelado") {
-                    await removerHorarioOcupado(dados, id);
-                }
-
-                if (novoStatus === "pendente" || novoStatus === "concluido") {
-                    await recriarHorarioOcupado(dados, id);
-                }
-            } catch (erro) {
-                console.error("Erro ao atualizar status:", erro);
-                alert("Erro ao atualizar status");
-            }
-        }
-
-        function escutarAgendamentos() {
-            if (unsubscribeAgendamentos) {
-                unsubscribeAgendamentos();
-                unsubscribeAgendamentos = null;
-            }
-
-            unsubscribeAgendamentos = onSnapshot(collection(db, "agendamentos"), (snapshot) => {
-                agendamentosGlobal = [];
-
-                snapshot.forEach((docSnap) => {
-                    const dados = docSnap.data();
-                    agendamentosGlobal.push({
-                        id: docSnap.id,
-                        nome: dados.nome || "Sem nome",
-                        telefone: dados.telefone || "-",
-                        email: dados.email || "-",
-                        servico: dados.servico || "-",
-                        preco: dados.preco || "-",
-                        barbeiro: dados.barbeiro || "-",
-                        data: dados.data || "-",
-                        hora: dados.hora || "-",
-                        status: dados.status || "pendente"
-                    });
-                });
-
-                agendamentosGlobal.sort((a, b) => {
-                    const dataHoraA = new Date(`${a.data}T${a.hora || "00:00"}-04:00`);
-                    const dataHoraB = new Date(`${b.data}T${b.hora || "00:00"}-04:00`);
-                    return dataHoraA - dataHoraB;
-                });
-
-                renderizarAgendamentos();
-            }, (erro) => {
-                console.error("Erro ao escutar agendamentos:", erro);
-                lista.innerHTML = `<p class="mensagem erro">Erro ao carregar agendamentos.</p>`;
-            });
-        }
-
-        botoesFiltro.forEach((botao) => {
-            botao.addEventListener("click", () => {
-                botoesFiltro.forEach((btn) => btn.classList.remove("ativo"));
-                botao.classList.add("ativo");
-                filtroAtual = botao.getAttribute("data-filtro");
-                renderizarAgendamentos();
-            });
-        });
-
-        loginBtn.addEventListener("click", async () => {
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (erro) {
-                console.error("Erro no login:", erro);
-                alert("Erro no login");
-            }
-        });
-
-        logoutBtn.addEventListener("click", async () => {
-            try {
-                await signOut(auth);
-            } catch (erro) {
-                console.error("Erro ao sair:", erro);
-                alert("Erro ao sair");
-            }
-        });
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                painel.style.display = "none";
-                loginArea.style.display = "flex";
-                lista.innerHTML = "";
-
-                if (unsubscribeAgendamentos) {
-                    unsubscribeAgendamentos();
-                    unsubscribeAgendamentos = null;
-                }
-                return;
-            }
-
-            if (user.email !== EMAIL_AUTORIZADO) {
-                alert("Acesso negado ❌");
-                await signOut(auth);
-                return;
-            }
-
-            loginArea.style.display = "none";
-            painel.style.display = "block";
-            escutarAgendamentos();
-        });
-    </script>
-</body>
-
-</html>
+if (typeof flatpickr !== "undefined") {
+    flatpickr("#data", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        locale: "pt",
+        disableMobile: true,
+        monthSelectorType: "dropdown"
+    });
+}

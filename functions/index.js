@@ -17,27 +17,27 @@ const TIMEZONE_OFFSET = "-04:00";
 const BARBEIROS_VALIDOS = ["Matheus", "Diogo"];
 
 const SERVICOS = {
-  "Corte": { preco: "50,00" },
-  "Barba": { preco: "40,00" },
-  "Acabamento e barba": { preco: "50,00" },
-  "Alisamento capilar": { preco: "90,00" },
-  "Barba (com Matheus)": { preco: "45,00", barbeiroFixo: "Matheus" },
-  "Cabelo + barba + sobrancelha (com Matheus)": { preco: "100,00", barbeiroFixo: "Matheus" },
-  "Cabelo + sobrancelha - navalha": { preco: "55,00" },
-  "Corte + barba + sobrancelha": { preco: "90,00" },
-  "Corte e barba (com Matheus)": { preco: "90,00", barbeiroFixo: "Matheus" },
-  "Corte e cavanhaque": { preco: "60,00" },
-  "Corte e hidratação": { preco: "85,00" },
-  "Corte e sobrancelha (com Matheus)": { preco: "60,00", barbeiroFixo: "Matheus" },
-  "Corte sobrancelha e cavanhaque": { preco: "70,00" },
-  "Limpeza de pele": { preco: "60,00" },
-  "Luzes": { preco: "150,00" },
-  "Nevou": { preco: "170,00" },
-  "Pezinho": { preco: "20,00" },
-  "Pigmentação": { preco: "40,00" },
-  "Pigmentação + corte": { preco: "85,00" },
-  "Restauração capilar": { preco: "45,00" },
-  "Selagem": { preco: "120,00" }
+  "Corte": { preco: "50,00", duracao: 30 },
+  "Barba": { preco: "40,00", duracao: 30 },
+  "Acabamento e barba": { preco: "50,00", duracao: 30 },
+  "Alisamento capilar": { preco: "90,00", duracao: 90 },
+  "Barba (com Matheus)": { preco: "45,00", duracao: 30, barbeiroFixo: "Matheus" },
+  "Cabelo + barba + sobrancelha (com Matheus)": { preco: "100,00", duracao: 60, barbeiroFixo: "Matheus" },
+  "Cabelo + sobrancelha - navalha": { preco: "55,00", duracao: 30 },
+  "Corte + barba + sobrancelha": { preco: "90,00", duracao: 60 },
+  "Corte e barba (com Matheus)": { preco: "90,00", duracao: 60, barbeiroFixo: "Matheus" },
+  "Corte e cavanhaque": { preco: "60,00", duracao: 30 },
+  "Corte e hidratação": { preco: "85,00", duracao: 30 },
+  "Corte e sobrancelha (com Matheus)": { preco: "60,00", duracao: 30, barbeiroFixo: "Matheus" },
+  "Corte sobrancelha e cavanhaque": { preco: "70,00", duracao: 30 },
+  "Limpeza de pele": { preco: "60,00", duracao: 30 },
+  "Luzes": { preco: "150,00", duracao: 30 },
+  "Nevou": { preco: "170,00", duracao: 120 },
+  "Pezinho": { preco: "20,00", duracao: 30 },
+  "Pigmentação": { preco: "40,00", duracao: 30 },
+  "Pigmentação + corte": { preco: "85,00", duracao: 60 },
+  "Restauração capilar": { preco: "45,00", duracao: 30 },
+  "Selagem": { preco: "120,00", duracao: 60 }
 };
 
 const HORARIOS_VALIDOS = [
@@ -74,7 +74,36 @@ function criarDataHoraMS(data, hora) {
 
 function diaFechado(data) {
   const d = new Date(`${data}T00:00:00${TIMEZONE_OFFSET}`);
-  return d.getUTCDay() === 0; // domingo
+  return d.getUTCDay() === 0;
+}
+
+function adicionarMinutos(dataHora, minutos) {
+  return new Date(dataHora.getTime() + minutos * 60000);
+}
+
+function formatarHoraMS(dataHora) {
+  const h = String(dataHora.getUTCHours()).padStart(2, "0");
+  const m = String(dataHora.getUTCMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+function calcularSlots(data, horaInicial, duracao) {
+  const quantidade = Math.ceil(duracao / 30);
+  const inicio = criarDataHoraMS(data, horaInicial);
+  const slots = [];
+
+  for (let i = 0; i < quantidade; i++) {
+    const atual = adicionarMinutos(inicio, i * 30);
+    const horaSlot = formatarHoraMS(atual);
+
+    if (!HORARIOS_VALIDOS.includes(horaSlot)) {
+      throw new HttpsError("failed-precondition", "Esse serviço não cabe nesse horário.");
+    }
+
+    slots.push(horaSlot);
+  }
+
+  return slots;
 }
 
 exports.criarAgendamento = onCall(async (request) => {
@@ -137,15 +166,18 @@ exports.criarAgendamento = onCall(async (request) => {
     throw new HttpsError("failed-precondition", "Não é possível agendar um horário que já passou.");
   }
 
-  const horarioId = gerarHorarioId(barbeiro, data, hora);
-  const horarioRef = db.collection("horarios_ocupados").doc(horarioId);
+  const duracao = SERVICOS[servico].duracao;
+  const slots = calcularSlots(data, hora, duracao);
   const agendamentoRef = db.collection("agendamentos").doc();
 
   await db.runTransaction(async (transaction) => {
-    const horarioDoc = await transaction.get(horarioRef);
+    for (const horaSlot of slots) {
+      const horarioRef = db.collection("horarios_ocupados").doc(gerarHorarioId(barbeiro, data, horaSlot));
+      const horarioDoc = await transaction.get(horarioRef);
 
-    if (horarioDoc.exists) {
-      throw new HttpsError("already-exists", "Este horário já foi ocupado.");
+      if (horarioDoc.exists) {
+        throw new HttpsError("already-exists", "Esse horário não está mais disponível.");
+      }
     }
 
     transaction.set(agendamentoRef, {
@@ -155,20 +187,27 @@ exports.criarAgendamento = onCall(async (request) => {
       lembreteEmail,
       servico,
       preco,
+      duracao,
       barbeiro,
       data,
       hora,
+      slots,
       criadoEm: admin.firestore.FieldValue.serverTimestamp(),
       lembrete30Enviado: false,
       status: "pendente"
     });
 
-    transaction.set(horarioRef, {
-      barbeiro,
-      data,
-      hora,
-      agendamentoId: agendamentoRef.id,
-      criadoEm: admin.firestore.FieldValue.serverTimestamp()
+    slots.forEach((horaSlot, index) => {
+      const horarioRef = db.collection("horarios_ocupados").doc(gerarHorarioId(barbeiro, data, horaSlot));
+      transaction.set(horarioRef, {
+        barbeiro,
+        data,
+        hora: horaSlot,
+        slotIndex: index,
+        agendamentoId: agendamentoRef.id,
+        servico,
+        criadoEm: admin.firestore.FieldValue.serverTimestamp()
+      });
     });
   });
 
@@ -197,6 +236,7 @@ exports.enviarEmailNovoAgendamento = onDocumentCreated(
         <p><strong>Telefone:</strong> ${dados.telefone || "-"}</p>
         <p><strong>E-mail:</strong> ${dados.email || "-"}</p>
         <p><strong>Serviço:</strong> ${dados.servico || "-"}</p>
+        <p><strong>Duração:</strong> ${dados.duracao || "-"} min</p>
         <p><strong>Barbeiro:</strong> ${dados.barbeiro || "-"}</p>
         <p><strong>Data:</strong> ${dados.data || "-"}</p>
         <p><strong>Hora:</strong> ${dados.hora || "-"}</p>
