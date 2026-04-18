@@ -156,7 +156,8 @@
             </div>
         </div>
     </section> -->
-      <section class="agendamento-premium" id="servicos">
+    
+    <section class="agendamento-premium" id="servicos">
         <div class="fluxo-agendamento">
             <h2 class="titulo-sessao">Agende seu <span>Estilo</span></h2>
 
@@ -389,6 +390,19 @@
                         Av. Brasil, 324 - Centro<br>
                         Ivinhema - MS, 79740-000
                     </p>
+
+                    <div class="horarios">
+                        <h3><i class="fas fa-clock"></i> Horário de Funcionamento</h3>
+                        <ul>
+                            <li><span>Segunda - Sexta:</span> 08:00 – 19:00</li>
+                            <li><span>Sábado:</span> 08:00 – 17:00</li>
+                            <li><span>Domingo:</span> Fechado</li>
+                        </ul>
+                    </div>
+
+                    <a href="https://maps.app.goo.gl/FWSjstqdHbVovicq8" target="_blank" class="btn-rota">
+                        Como Chegar (Google Maps)
+                    </a>
                 </div>
 
                 <div class="local-mapa">
@@ -400,8 +414,6 @@
             </div>
         </div>
     </section>
-
-
     <footer class="rodape">
         <div class="container-rodape">
             <div class="rodape-content">
@@ -443,50 +455,54 @@
         </div>
     </footer>
     <div id="modalSucesso" class="modal-sucesso">
-        <div class="modal-sucesso-box">
-            <div class="modal-icone">💈</div>
-            <h3>Agendamento confirmado</h3>
-            <p>Seu horário foi reservado com sucesso.</p>
+    <div class="modal-sucesso-box">
+        <div class="modal-icone">💈</div>
+        <h3>Agendamento confirmado</h3>
+        <p>Seu horário foi reservado com sucesso.</p>
 
-            <div class="modal-info" id="modalInfoAgendamento"></div>
+        <div class="modal-info" id="modalInfoAgendamento"></div>
 
-            <div class="modal-sucesso-botoes">
-                <button id="fecharModalSucesso" class="btn-modal-fechar">Fechar</button>
-                <button id="abrirWhatsModal" class="btn-modal-whats">WhatsApp</button>
-            </div>
+        <div class="modal-sucesso-botoes">
+            <button id="fecharModalSucesso" class="btn-modal-fechar">Fechar</button>
+            <button id="abrirWhatsModal" class="btn-modal-whats">WhatsApp</button>
         </div>
     </div>
+</div>
     <!-- JS -->
 
-
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+
     <script src="./index.js"></script>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDNWWG7nPI7EXyuMlJmiHbeHAX6EXABWqQ",
-            authDomain: "barbearia-lado-a-lado.firebaseapp.com",
-            projectId: "barbearia-lado-a-lado",
-            storageBucket: "barbearia-lado-a-lado.firebasestorage.app",
-            messagingSenderId: "477542764196",
-            appId: "1:477542764196:web:691facb65d22e2f214a031"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDNWWG7nPI7EXyuMlJmiHbeHAX6EXABWqQ",
+        authDomain: "barbearia-lado-a-lado.firebaseapp.com",
+        projectId: "barbearia-lado-a-lado",
+        storageBucket: "barbearia-lado-a-lado.firebasestorage.app",
+        messagingSenderId: "477542764196",
+        appId: "1:477542764196:web:691facb65d22e2f214a031"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const functions = getFunctions(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const functions = getFunctions(app);
 
-        window.db = db;
-        window.collection = collection;
-        window.onSnapshot = onSnapshot;
-        window.functions = functions;
-        window.httpsCallable = httpsCallable;
-    </script>
+    console.log("Firebase conectado 🔥");
+
+    window.db = db;
+    window.collection = collection;
+    window.getDocs = getDocs;
+    window.onSnapshot = onSnapshot;
+    window.functions = functions;
+    window.httpsCallable = httpsCallable;
+</script>
 </body>
 
 </html>
