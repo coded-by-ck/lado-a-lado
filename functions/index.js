@@ -77,30 +77,24 @@ function diaFechado(data) {
   return d.getUTCDay() === 0;
 }
 
-function adicionarMinutos(dataHora, minutos) {
-  return new Date(dataHora.getTime() + minutos * 60000);
-}
-
-function formatarHoraMS(dataHora) {
-  const h = String(dataHora.getUTCHours()).padStart(2, "0");
-  const m = String(dataHora.getUTCMinutes()).padStart(2, "0");
-  return `${h}:${m}`;
-}
-
-function calcularSlots(data, horaInicial, duracao) {
+function calcularSlots(horaInicial, duracao) {
   const quantidade = Math.ceil(duracao / 30);
-  const inicio = criarDataHoraMS(data, horaInicial);
+  const indiceInicial = HORARIOS_VALIDOS.indexOf(horaInicial);
+
+  if (indiceInicial === -1) {
+    throw new HttpsError("invalid-argument", "Horário inicial inválido.");
+  }
+
   const slots = [];
 
   for (let i = 0; i < quantidade; i++) {
-    const atual = adicionarMinutos(inicio, i * 30);
-    const horaSlot = formatarHoraMS(atual);
+    const indiceAtual = indiceInicial + i;
 
-    if (!HORARIOS_VALIDOS.includes(horaSlot)) {
+    if (indiceAtual >= HORARIOS_VALIDOS.length) {
       throw new HttpsError("failed-precondition", "Esse serviço não cabe nesse horário.");
     }
 
-    slots.push(horaSlot);
+    slots.push(HORARIOS_VALIDOS[indiceAtual]);
   }
 
   return slots;
@@ -167,7 +161,7 @@ exports.criarAgendamento = onCall(async (request) => {
   }
 
   const duracao = SERVICOS[servico].duracao;
-  const slots = calcularSlots(data, hora, duracao);
+  const slots = calcularSlots(hora, duracao);
   const agendamentoRef = db.collection("agendamentos").doc();
 
   await db.runTransaction(async (transaction) => {

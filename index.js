@@ -198,35 +198,22 @@ function criarDataHoraMS(data, hora) {
     return new Date(`${data}T${hora}:00${TIMEZONE_OFFSET}`);
 }
 
-function adicionarMinutos(dataHora, minutos) {
-    return new Date(dataHora.getTime() + minutos * 60000);
-}
-
-function formatarHoraLocal(dataHora) {
-    const h = String(dataHora.getUTCHours()).padStart(2, "0");
-    const m = String(dataHora.getUTCMinutes()).padStart(2, "0");
-    return `${h}:${m}`;
-}
-
-function diaFechado(data) {
-    const d = new Date(`${data}T00:00:00${TIMEZONE_OFFSET}`);
-    return d.getUTCDay() === 0;
-}
-
-function calcularSlotsServico(data, horaInicial, duracao) {
+function calcularSlotsServico(horaInicial, duracao) {
     const quantidade = Math.ceil(duracao / 30);
-    const inicio = criarDataHoraMS(data, horaInicial);
+    const indiceInicial = HORARIOS_VALIDOS.indexOf(horaInicial);
+
+    if (indiceInicial === -1) return null;
+
     const slots = [];
 
     for (let i = 0; i < quantidade; i++) {
-        const atual = adicionarMinutos(inicio, i * 30);
-        const horaSlot = formatarHoraLocal(atual);
+        const indiceAtual = indiceInicial + i;
 
-        if (!HORARIOS_VALIDOS.includes(horaSlot)) {
+        if (indiceAtual >= HORARIOS_VALIDOS.length) {
             return null;
         }
 
-        slots.push(horaSlot);
+        slots.push(HORARIOS_VALIDOS[indiceAtual]);
     }
 
     return slots;
@@ -272,7 +259,7 @@ function renderizarHorarios(barbeiro, data, ocupados) {
         btn.innerText = hora;
         btn.classList.add("horario-btn");
 
-        const slotsNecessarios = calcularSlotsServico(data, hora, duracao);
+        const slotsNecessarios = calcularSlotsServico(hora, duracao);
         const passado = horarioJaPassou(data, hora);
 
         let ocupado = false;
