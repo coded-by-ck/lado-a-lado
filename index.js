@@ -87,11 +87,27 @@ document.querySelectorAll('.btn-categoria').forEach((btn) => {
         if (!listaAtual) return;
 
         const todasListas = document.querySelectorAll('.servicos-lista');
+        const todosBotoes = document.querySelectorAll('.btn-categoria');
+
         todasListas.forEach((lista) => {
-            if (lista !== listaAtual) lista.style.display = 'none';
+            if (lista !== listaAtual) {
+                lista.style.display = 'none';
+            }
         });
 
-        listaAtual.style.display = listaAtual.style.display === 'block' ? 'none' : 'block';
+        todosBotoes.forEach((b) => {
+            if (b !== btn) b.classList.remove('ativa');
+        });
+
+        const estaAberta = listaAtual.style.display === 'block';
+
+        if (estaAberta) {
+            listaAtual.style.display = 'none';
+            btn.classList.remove('ativa');
+        } else {
+            listaAtual.style.display = 'block';
+            btn.classList.add('ativa');
+        }
     });
 });
 
@@ -129,6 +145,7 @@ document.querySelectorAll('.item-servico').forEach((item) => {
 });
 
 const btnVoltar = document.querySelector('.btn-voltar');
+
 btnVoltar?.addEventListener('click', () => {
     const passoServicos = document.getElementById('passo-servicos');
     const passoProfissionais = document.getElementById('passo-profissionais');
@@ -196,6 +213,11 @@ document.querySelectorAll('.btn-escolher-barbeiro').forEach((btn) => {
 
 function criarDataHoraMS(data, hora) {
     return new Date(`${data}T${hora}:00${TIMEZONE_OFFSET}`);
+}
+
+function diaFechado(data) {
+    const d = new Date(`${data}T00:00:00-04:00`);
+    return d.getUTCDay() === 0;
 }
 
 function calcularSlotsServico(horaInicial, duracao) {
@@ -267,7 +289,7 @@ function renderizarHorarios(barbeiro, data, ocupados) {
         if (!slotsNecessarios) {
             ocupado = true;
         } else {
-            ocupado = slotsNecessarios.some(slot => ocupados.includes(slot) || horarioJaPassou(data, slot));
+            ocupado = slotsNecessarios.some(slot => ocupados.includes(slot));
         }
 
         if (ocupado || passado) {
@@ -293,7 +315,10 @@ function renderizarHorarios(barbeiro, data, ocupados) {
 }
 
 function escutarHorarios(barbeiro, data) {
-    if (!window.db || !window.collection || !window.onSnapshot) return;
+    if (!window.db || !window.collection || !window.onSnapshot) {
+        console.error("Firebase não está disponível no window.");
+        return;
+    }
 
     if (unsubscribeHorarios) {
         unsubscribeHorarios();
@@ -313,7 +338,8 @@ function escutarHorarios(barbeiro, data) {
         });
 
         renderizarHorarios(barbeiro, data, ocupados);
-    }, () => {
+    }, (erro) => {
+        console.error("Erro ao escutar horários:", erro);
         const horariosDiv = document.getElementById("horarios");
         if (horariosDiv) {
             horariosDiv.innerHTML = `<p class="horarios-vazio">Erro ao carregar horários.</p>`;
