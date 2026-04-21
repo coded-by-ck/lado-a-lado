@@ -241,7 +241,7 @@ exports.enviarEmailNovoAgendamento = onDocumentCreated(
   }
 );
 
-exports.lembrete30min = onSchedule(
+exports.exports.lembrete30min = onSchedule(
   {
     schedule: "every 5 minutes",
     timeZone: "America/Campo_Grande",
@@ -261,25 +261,28 @@ exports.lembrete30min = onSchedule(
 
       if (d.lembrete30Enviado) continue;
       if (d.status === "cancelado" || d.status === "concluido") continue;
-      if (!d.lembreteEmail) continue;
-      if (!d.email || !validarEmail(d.email)) continue;
       if (!d.data || !d.hora) continue;
 
       const dataHora = criarDataHoraMS(d.data, d.hora);
 
       if (dataHora >= inicio && dataHora <= fim) {
+        if (!d.email || !d.lembreteEmail) continue;
+
         await resend.emails.send({
           from: EMAIL_FROM,
           to: [d.email],
-          subject: "Seu agendamento é em 30 minutos 💈",
+          subject: "Seu horário está chegando ⏰",
           html: `
-            <h2>Seu horário está chegando</h2>
-            <p><strong>Cliente:</strong> ${d.nome || "-"}</p>
+            <h2>Falta pouco 💈</h2>
+            <p>Olá ${d.nome || ""},</p>
+            <p>Seu horário na barbearia é daqui a 30 minutos.</p>
+
             <p><strong>Serviço:</strong> ${d.servico || "-"}</p>
             <p><strong>Barbeiro:</strong> ${d.barbeiro || "-"}</p>
             <p><strong>Data:</strong> ${d.data || "-"}</p>
             <p><strong>Hora:</strong> ${d.hora || "-"}</p>
-            <p>Te esperamos em 30 minutos 💈</p>
+
+            <p>Te esperamos! 🔥</p>
           `,
         });
 
