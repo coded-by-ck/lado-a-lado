@@ -20,9 +20,32 @@
     <title>Lado a Lado</title>
 </head>
 
+
+
 <body>
 
-    <!-- HEADER -->
+    <!-- LOADER -->
+    <div id="bee-loader">
+
+        <!-- ABELHAS -->
+        <div class="bees"></div>
+
+        <!-- LOGO -->
+        <img src="img/lado-a-deus.png" alt="Lado a Lado" class="loader-logo">
+
+    </div>
+
+    <div class="site-bees" aria-hidden="true">
+        <span class="site-bee"></span>
+        <span class="site-bee"></span>
+        <span class="site-bee"></span>
+        <span class="site-bee"></span>
+        <span class="site-bee"></span>
+        <span class="site-bee"></span>
+        <span class="site-bee"></span>
+        <span class="site-bee"></span>
+    </div>
+
     <header>
         <a href="#home"><img src="./img/abelhinha.png" class="logo" alt="Logo"></a>
 
@@ -67,7 +90,7 @@
     <!-- CARROSSEL -->
     <main>
         <div class="carrossel" id="home">
-            <img class="imagem ativa img1" src="./img/background-div.jpg">
+            <img class="imagem ativa img1" src="./img/hero-pri.png">
             <img class="imagem img2" src="./img/tenis.jpg">
             <img class="imagem img3" src="./img/barber-3.jpg">
             <img class="imagem img4" src="./img/barber-4.jpg">
@@ -76,18 +99,17 @@
                 <img src="./img/lado-a-deus.png" class="logo-centro">
                 <h1>CUIDAMOS DA SUA <strong>AUTOESTIMA</strong></h1>
                 <p>CORTE NO TEMPO ESTILO ATEMPORAL</p>
+                <div class="botoes-carrossel">
+                    <button class="botao selecionado"></button>
+                    <button class="botao"></button>
+                    <button class="botao"></button>
+                    <button class="botao"></button>
+                </div>
                 <a href="#servicos" class="btn-agendar">AGENDE SEU HORARIO</a>
             </div>
 
         </div>
 
-        <!-- BOTÕES -->
-        <div class="botoes-carrossel">
-            <button class="botao selecionado"></button>
-            <button class="botao"></button>
-            <button class="botao"></button>
-            <button class="botao"></button>
-        </div>
     </main>
 
     <section class="sobre" id="sobre">
@@ -118,7 +140,8 @@
                 <h2 class="titulo-sessao">Como tudo <span>Começou</span></h2>
                 <p class="texto-destaque">De um sonho de bancada à referência na região.</p>
                 <p class="descricao">
-                    Tudo começou quando eu varria o chão de uma barbearia e colocava as toalhas para esquentar. Eu não
+                    Tudo começou quando eu varria o chão de uma barbearia e colocava as toalhas para esquentar. Eu
+                    não
                     ganhava nada para fazer isso… Na real, ganhava muito: ganhava conhecimento, aprendia técnicas de
                     corte — mas ainda não cortava.
                     Hoje, sendo proprietário da @ladoalado_barbearia , varrer o chão é uma das partes mais gostosas!
@@ -156,7 +179,7 @@
             </div>
         </div>
     </section> -->
-    
+
     <section class="agendamento-premium" id="servicos">
         <div class="fluxo-agendamento">
             <h2 class="titulo-sessao">Agende seu <span>Estilo</span></h2>
@@ -184,15 +207,19 @@
                                 <button class="btn-selecionar">Selecionar</button>
                             </div>
                             <div class="item-servico" data-nome="Corte e barba (com Matheus)" data-preco="90,00">
-                                <div class="info"><strong>Corte e barba (com Matheus)</strong><span>R$ 90,00</span></div>
+                                <div class="info"><strong>Corte e barba (com Matheus)</strong><span>R$ 90,00</span>
+                                </div>
                                 <button class="btn-selecionar">Selecionar</button>
                             </div>
                             <div class="item-servico" data-nome="Corte e sobrancelha (com Matheus)" data-preco="60,00">
-                                <div class="info"><strong>Corte e sobrancelha (com Matheus)</strong><span>R$ 60,00</span></div>
+                                <div class="info"><strong>Corte e sobrancelha (com Matheus)</strong><span>R$
+                                        60,00</span></div>
                                 <button class="btn-selecionar">Selecionar</button>
                             </div>
                             <div class="item-servico" data-nome="Corte sobrancelha e cavanhaque" data-preco="70,00">
-                                <div class="info"><strong>Corte sobrancelha e cavanhaque</strong><span>R$ 70,00</span></div>
+                                <div class="info"><strong>Corte sobrancelha e cavanhaque</strong><span>R$
+                                        70,00</span>
+                                </div>
                                 <button class="btn-selecionar">Selecionar</button>
                             </div>
                         </div>
@@ -219,16 +246,22 @@
                     <div class="categoria-item">
                         <button class="btn-categoria">💎 Combos <span class="seta">+</span></button>
                         <div class="servicos-lista">
-                            <div class="item-servico" data-nome="Cabelo + barba + sobrancelha (com Matheus)" data-preco="100,00">
-                                <div class="info"><strong>Cabelo + barba + sobrancelha (com Matheus)</strong><span>R$ 100,00</span></div>
+                            <div class="item-servico" data-nome="Cabelo + barba + sobrancelha (com Matheus)"
+                                data-preco="100,00">
+                                <div class="info"><strong>Cabelo + barba + sobrancelha (com
+                                        Matheus)</strong><span>R$
+                                        100,00</span></div>
                                 <button class="btn-selecionar">Selecionar</button>
                             </div>
                             <div class="item-servico" data-nome="Cabelo + sobrancelha - navalha" data-preco="55,00">
-                                <div class="info"><strong>Cabelo + sobrancelha - navalha</strong><span>R$ 55,00</span></div>
+                                <div class="info"><strong>Cabelo + sobrancelha - navalha</strong><span>R$
+                                        55,00</span>
+                                </div>
                                 <button class="btn-selecionar">Selecionar</button>
                             </div>
                             <div class="item-servico" data-nome="Corte + barba + sobrancelha" data-preco="90,00">
-                                <div class="info"><strong>Corte + barba + sobrancelha</strong><span>R$ 90,00</span></div>
+                                <div class="info"><strong>Corte + barba + sobrancelha</strong><span>R$ 90,00</span>
+                                </div>
                                 <button class="btn-selecionar">Selecionar</button>
                             </div>
                             <div class="item-servico" data-nome="Pigmentação + corte" data-preco="85,00">
@@ -455,19 +488,19 @@
         </div>
     </footer>
     <div id="modalSucesso" class="modal-sucesso">
-    <div class="modal-sucesso-box">
-        <div class="modal-icone">💈</div>
-        <h3>Agendamento confirmado</h3>
-        <p>Seu horário foi reservado com sucesso.</p>
+        <div class="modal-sucesso-box">
+            <div class="modal-icone">💈</div>
+            <h3>Agendamento confirmado</h3>
+            <p>Seu horário foi reservado com sucesso.</p>
 
-        <div class="modal-info" id="modalInfoAgendamento"></div>
+            <div class="modal-info" id="modalInfoAgendamento"></div>
 
-        <div class="modal-sucesso-botoes">
-            <button id="fecharModalSucesso" class="btn-modal-fechar">Fechar</button>
-            <button id="abrirWhatsModal" class="btn-modal-whats">WhatsApp</button>
+            <div class="modal-sucesso-botoes">
+                <button id="fecharModalSucesso" class="btn-modal-fechar">Fechar</button>
+                <button id="abrirWhatsModal" class="btn-modal-whats">WhatsApp</button>
+            </div>
         </div>
     </div>
-</div>
     <!-- JS -->
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -477,32 +510,32 @@
     <script src="./index.js"></script>
 
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDNWWG7nPI7EXyuMlJmiHbeHAX6EXABWqQ",
-        authDomain: "barbearia-lado-a-lado.firebaseapp.com",
-        projectId: "barbearia-lado-a-lado",
-        storageBucket: "barbearia-lado-a-lado.firebasestorage.app",
-        messagingSenderId: "477542764196",
-        appId: "1:477542764196:web:691facb65d22e2f214a031"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDNWWG7nPI7EXyuMlJmiHbeHAX6EXABWqQ",
+            authDomain: "barbearia-lado-a-lado.firebaseapp.com",
+            projectId: "barbearia-lado-a-lado",
+            storageBucket: "barbearia-lado-a-lado.firebasestorage.app",
+            messagingSenderId: "477542764196",
+            appId: "1:477542764196:web:691facb65d22e2f214a031"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const functions = getFunctions(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const functions = getFunctions(app);
 
-    console.log("Firebase conectado 🔥");
+        console.log("Firebase conectado 🔥");
 
-    window.db = db;
-    window.collection = collection;
-    window.getDocs = getDocs;
-    window.onSnapshot = onSnapshot;
-    window.functions = functions;
-    window.httpsCallable = httpsCallable;
-</script>
+        window.db = db;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.onSnapshot = onSnapshot;
+        window.functions = functions;
+        window.httpsCallable = httpsCallable;
+    </script>
 </body>
 
 </html>

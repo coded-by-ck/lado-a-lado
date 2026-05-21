@@ -507,3 +507,115 @@ if (typeof flatpickr !== "undefined") {
         monthSelectorType: "dropdown"
     });
 }
+
+// ==========================
+// LOADER ABELHAS
+// ==========================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const loader =
+        document.getElementById("bee-loader");
+
+    const beesContainer =
+        document.querySelector(".bees");
+
+    if (!loader || !beesContainer) return;
+
+    // QUANTIDADE DE ABELHAS
+    const totalBees = 12;
+
+    for (let i = 0; i < totalBees; i++) {
+
+        const bee =
+            document.createElement("span");
+
+        bee.classList.add("bee");
+
+        const isLeftToRight = Math.random() > 0.48;
+        const size = Math.random() * 28 + 28;
+        const scale = Math.random() * 0.38 + 0.78;
+        const duration = Math.random() * 4.8 + 8.2;
+        const delay = Math.random() * -9.5;
+        const top = Math.random() * 78 + 11;
+        const distance = isLeftToRight ? "132vw" : "-132vw";
+        const waveA = `${(Math.random() * 64 - 32).toFixed(1)}px`;
+        const waveB = `${(Math.random() * 82 - 41).toFixed(1)}px`;
+        const waveC = `${(Math.random() * 64 - 32).toFixed(1)}px`;
+        const waveD = `${(Math.random() * 44 - 22).toFixed(1)}px`;
+        const startRot = `${Math.random() * 10 - 5}deg`;
+        const midRotA = `${Math.random() * 12 - 6}deg`;
+        const midRotB = `${Math.random() * 12 - 6}deg`;
+        const midRotC = `${Math.random() * 12 - 6}deg`;
+        const endRot = `${Math.random() * 10 - 5}deg`;
+        const depth = Math.random() > 0.78 ? 5 : 2;
+
+        bee.style.setProperty("--start-x", isLeftToRight ? "-18vw" : "118vw");
+        bee.style.setProperty("--start-y", `${top}vh`);
+        bee.style.setProperty("--bee-size", `${size}px`);
+        bee.style.setProperty("--bee-scale", scale.toFixed(2));
+        bee.style.setProperty("--bee-duration", `${duration.toFixed(2)}s`);
+        bee.style.setProperty("--bee-delay", `${delay.toFixed(2)}s`);
+        bee.style.setProperty("--fly-distance", distance);
+        bee.style.setProperty("--fly-a", isLeftToRight ? "28vw" : "-28vw");
+        bee.style.setProperty("--fly-b", isLeftToRight ? "64vw" : "-64vw");
+        bee.style.setProperty("--fly-c", isLeftToRight ? "100vw" : "-100vw");
+        bee.style.setProperty("--wave-a", waveA);
+        bee.style.setProperty("--wave-b", waveB);
+        bee.style.setProperty("--wave-c", waveC);
+        bee.style.setProperty("--wave-d", waveD);
+        bee.style.setProperty("--start-rot", startRot);
+        bee.style.setProperty("--mid-rot-a", midRotA);
+        bee.style.setProperty("--mid-rot-b", midRotB);
+        bee.style.setProperty("--mid-rot-c", midRotC);
+        bee.style.setProperty("--end-rot", endRot);
+        bee.style.setProperty("--z-depth", `${Math.random() * 70 - 20}px`);
+        bee.style.setProperty("--bee-depth", depth);
+        bee.style.setProperty("--bee-opacity", (Math.random() * 0.22 + 0.34).toFixed(2));
+
+        beesContainer.appendChild(bee);
+    }
+
+    // ESCONDER LOADER
+
+    window.addEventListener("load", () => {
+
+        setTimeout(() => {
+
+            loader.classList.add("hide");
+
+            setTimeout(() => {
+
+                loader.remove();
+
+            }, 900);
+
+        }, 4300);
+
+    });
+
+});
+
+// Efeito visual decorativo: capturar abelhas flutuantes.
+document.querySelectorAll(".site-bee").forEach((bee) => {
+    bee.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const rect = bee.getBoundingClientRect();
+        const capture = document.createElement("span");
+
+        capture.className = "bee-capture";
+        capture.style.setProperty("--bee-x", `${rect.left + rect.width / 2}px`);
+        capture.style.setProperty("--bee-y", `${rect.top + rect.height / 2}px`);
+
+        document.body.appendChild(capture);
+
+        bee.style.opacity = "0";
+
+        setTimeout(() => {
+            capture.remove();
+            bee.style.opacity = "";
+        }, 1400);
+    });
+});
