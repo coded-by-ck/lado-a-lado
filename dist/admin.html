@@ -1,16 +1,51 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Painel do Barbeiro</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Fjalla+One&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/assets/main-zzz6maOO.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/main-CUcyFsDQ.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+    <title>Painel do Barbeiro</title>
+  <script type="module" crossorigin src="/assets/admin-BBWWLYpf.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="stylesheet" crossorigin href="/assets/admin-ZknrhGlb.css">
+</head>
+
+<body>
+
+    <main class="admin-page">
+        <section class="admin-box">
+            <div class="admin-header">
+                <h1>Painel do Barbeiro</h1>
+                <p>Barbearia Lado a Lado</p>
+            </div>
+
+            <div class="login-area" id="loginArea" style="display: none;">
+                <button id="loginBtn" class="btn-principal">Entrar com Google</button>
+            </div>
+
+            <div id="painel" class="painel" style="display: none;">
+                <div class="painel-topo">
+                    <h2>Agendamentos</h2>
+
+                    <div class="topo-acoes">
+                        <div class="filtros">
+                            <button class="btn-filtro ativo" data-filtro="todos">Todos</button>
+                            <button class="btn-filtro" data-filtro="pendente">Pendentes</button>
+                            <button class="btn-filtro" data-filtro="concluido">Concluídos</button>
+                            <button class="btn-filtro" data-filtro="cancelado">Cancelados</button>
+                            <button class="btn-filtro" data-filtro="hoje">Hoje</button>
+                            <button class="btn-filtro" data-filtro="proximos">Próximos</button>
+                        </div>
+
+                        <button id="logoutBtn" class="btn-logout">Sair</button>
+                    </div>
+                </div>
+
+                <div id="lista" class="lista-agendamentos"></div>
+            </div>
+        </section>
+    </main>
+
+</body>
+
 </html>

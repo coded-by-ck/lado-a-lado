@@ -3,6 +3,7 @@ const botoes = document.querySelectorAll('.botao');
 
 let indexAtual = 0;
 let intervalo;
+let autoplayIniciado = false;
 let unsubscribeHorarios = null;
 
 const TIMEZONE_OFFSET = "-04:00";
@@ -67,6 +68,8 @@ function proximoSlide() {
 
 function iniciarAutoplay() {
     clearInterval(intervalo);
+    mudarSlide(0);
+    autoplayIniciado = true;
     intervalo = setInterval(proximoSlide, 4000);
 }
 
@@ -74,11 +77,20 @@ if (imagens.length > 0 && imagens.length === botoes.length) {
     botoes.forEach((botao, i) => {
         botao.addEventListener('click', () => {
             mudarSlide(i);
-            iniciarAutoplay();
+            if (autoplayIniciado) {
+                clearInterval(intervalo);
+                intervalo = setInterval(proximoSlide, 4000);
+            }
         });
     });
 
-    iniciarAutoplay();
+    mudarSlide(0);
+
+    if (document.getElementById("bee-loader")) {
+        window.addEventListener("ladoalado:loader-complete", iniciarAutoplay, { once: true });
+    } else {
+        iniciarAutoplay();
+    }
 }
 
 document.querySelectorAll('.btn-categoria').forEach((btn) => {
@@ -587,6 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
 
                 loader.remove();
+                window.dispatchEvent(new Event("ladoalado:loader-complete"));
 
             }, 900);
 

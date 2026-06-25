@@ -112,7 +112,7 @@ function Header() {
   );
 }
 
-function BeeLoader() {
+function BeeLoader({ onComplete }) {
   const bees = useMemo(() => Array.from({ length: 12 }, (_, index) => {
     const isLeftToRight = Math.random() > 0.48;
     return {
@@ -146,9 +146,14 @@ function BeeLoader() {
   const [hide, setHide] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setHide(true), 4300);
+    if (hide) return undefined;
+
+    const timer = setTimeout(() => {
+      setHide(true);
+      onComplete?.();
+    }, 4300);
     return () => clearTimeout(timer);
-  }, []);
+  }, [hide, onComplete]);
 
   if (hide) return null;
   return (
@@ -183,14 +188,16 @@ function DecorativeBees() {
   );
 }
 
-function Hero() {
+function Hero({ canAutoplay }) {
   const imagens = [heroPri, tenis, barber3, barber4];
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
+    if (!canAutoplay) return undefined;
+    setSlide(0);
     const id = setInterval(() => setSlide((current) => (current + 1) % imagens.length), 4000);
     return () => clearInterval(id);
-  }, [imagens.length]);
+  }, [canAutoplay, imagens.length]);
 
   return (
     <main>
@@ -447,12 +454,14 @@ function FeedbackLocationFooter() {
 }
 
 function PublicApp() {
+  const [loaderDone, setLoaderDone] = useState(false);
+
   return (
     <>
-      <BeeLoader />
+      <BeeLoader onComplete={() => setLoaderDone(true)} />
       <DecorativeBees />
       <Header />
-      <Hero />
+      <Hero canAutoplay={loaderDone} />
       <AboutSections />
       <Booking />
       <FeedbackLocationFooter />

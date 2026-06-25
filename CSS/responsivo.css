@@ -457,3 +457,108 @@
     }
 }
 
+/* Ajuste fino para Safari/iPhone: centraliza loader e hero no viewport real */
+@media (max-width: 768px) {
+    html,
+    body {
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    #bee-loader {
+        width: 100%;
+        height: 100svh;
+        min-height: 100svh;
+        padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+        display: grid;
+        place-items: center;
+    }
+
+    @supports (height: 100dvh) {
+        #bee-loader {
+            height: 100dvh;
+            min-height: 100dvh;
+        }
+    }
+
+    .loader-logo {
+        width: clamp(190px, 66vw, 290px);
+        max-width: calc(100vw - 48px);
+    }
+
+    #bee-loader::after {
+        bottom: calc(env(safe-area-inset-bottom) + 44px);
+        width: 100%;
+        text-align: center;
+        padding-left: 0.24em;
+    }
+
+    .carrossel {
+        height: 100svh !important;
+        min-height: 100svh !important;
+        width: 100%;
+    }
+
+    @supports (height: 100dvh) {
+        .carrossel {
+            height: 100dvh !important;
+            min-height: 100dvh !important;
+        }
+    }
+
+    .imagem {
+        height: 100% !important;
+        min-height: 0 !important;
+    }
+
+    .conteudo-hero {
+        top: 50% !important;
+        left: 50%;
+        width: min(100%, 430px);
+        max-width: 430px;
+        margin-top: 0 !important;
+        padding: 0 22px;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logo-centro {
+        width: clamp(150px, 42vw, 178px) !important;
+        margin-bottom: 12px;
+    }
+
+    .conteudo-hero h1 {
+        width: 100%;
+        max-width: 360px;
+        font-size: clamp(1.9rem, 9.4vw, 2.55rem) !important;
+        line-height: 1;
+        margin: 0 auto 12px;
+    }
+
+    .conteudo-hero p {
+        max-width: 310px;
+        font-size: clamp(0.78rem, 3.2vw, 0.95rem);
+        line-height: 1.35;
+        margin: 0 auto 18px;
+    }
+
+    .btn-agendar {
+        width: min(100%, 300px);
+        min-height: 50px;
+        padding: 13px 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .botoes-carrossel {
+        position: static;
+        width: auto;
+        margin: 0 0 20px;
+    }
+}
+
